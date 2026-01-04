@@ -21,7 +21,7 @@ This service receives structured invoice line item data via REST API and returns
 
 ## 🏗️ Architecture
 
-![Architecture flowchart](_internal/flowchart.png)
+![Architecture flowchart](flowchart.png)
 
 ## 📋 Requirements
 
