@@ -1,0 +1,13 @@
+# Azure App Service deployment configuration
+# This file can be used with Azure CLI or Azure DevOps pipelines
+
+runtime: python|3.11
+startup_command: uvicorn src.api.main:app --host 0.0.0.0 --port 8000
+
+# Environment variables (set these in Azure Portal or CLI)
+# AZURE_OPENAI_ENDPOINT
+# AZURE_OPENAI_API_KEY
+# AZURE_OPENAI_API_VERSION
+# AZURE_OPENAI_DEPLOYMENT_NAME
+# VALID_API_KEYS
+# API_KEY_REQUIRED

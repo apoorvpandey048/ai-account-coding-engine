@@ -1,0 +1,51 @@
+{
+  "Material": [
+    "3000 – Raw Materials",
+    "3100 – Metals",
+    "3200 – Plastics"
+  ],
+  "Consumables": [
+    "4200 – Consumables",
+    "4210 – Office Supplies",
+    "4220 – Production Supplies"
+  ],
+  "Transport": [
+    "4900 – Transport & Freight Costs",
+    "4910 – Domestic Shipping",
+    "4920 – International Shipping"
+  ],
+  "Surcharge": [
+    "4980 – Surcharges & Fees",
+    "4981 – Small Quantity Surcharge",
+    "4982 – Express Fees"
+  ],
+  "IT & Software": [
+    "6500 – IT & Software Expenses",
+    "6510 – Software Licenses",
+    "6520 – Cloud Services"
+  ],
+  "Tools": [
+    "6100 – Tools & Equipment",
+    "6110 – Power Tools",
+    "6120 – Hand Tools"
+  ],
+  "Service": [
+    "6000 – External Services",
+    "6010 – Consulting Services",
+    "6020 – Maintenance Services"
+  ],
+  "Safety": [
+    "6250 – Safety Equipment (PPE)",
+    "6251 – Protective Clothing",
+    "6252 – Safety Gear"
+  ],
+  "Operating Supplies": [
+    "4300 – Operating Supplies",
+    "4310 – Lubricants",
+    "4320 – Cleaning Supplies"
+  ],
+  "Other": [
+    "4200 – Consumables",
+    "6000 – External Services"
+  ]
+}
