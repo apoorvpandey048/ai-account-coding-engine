@@ -21,35 +21,7 @@ This service receives structured invoice line item data via REST API and returns
 
 ## 🏗️ Architecture
 
-```
-┌─────────────┐
-│   Client    │
-│   (ERP)     │
-└──────┬──────┘
-       │ HTTP/JSON
-       ▼
-┌─────────────────┐
-│   FastAPI       │
-│   API Layer     │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐      ┌──────────────────┐
-│  Classifier     │◄────►│  Azure OpenAI    │
-│  (Rule + LLM)   │      │  (GPT-4)         │
-└────────┬────────┘      └──────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Account Mapper │
-│  (GL Accounts)  │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  JSON Response  │
-└─────────────────┘
-```
+![Architecture flowchart](_internal/flowchart.png)
 
 ## 📋 Requirements
 
