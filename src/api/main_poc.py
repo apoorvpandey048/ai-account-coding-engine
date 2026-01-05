@@ -68,6 +68,8 @@ def startup_event():
         api_key = os.getenv("AZURE_OPENAI_KEY")
         api_version = os.getenv("AZURE_OPENAI_API_VERSION", "2024-08-01-preview")
         
+        print(f"DEBUG: endpoint={endpoint}, api_key={'[SET]' if api_key else '[MISSING]'}, api_version={api_version}")
+        
         if endpoint and api_key:
             try:
                 azure_openai_client = AzureOpenAI(
@@ -78,8 +80,13 @@ def startup_event():
                 print("✓ Azure OpenAI client initialized")
             except Exception as e:
                 print(f"✗ Azure OpenAI init failed: {e}")
+                import traceback
+                traceback.print_exc()
         else:
-            print("✗ Azure OpenAI credentials not configured")
+            missing = []
+            if not endpoint: missing.append("AZURE_OPENAI_ENDPOINT")
+            if not api_key: missing.append("AZURE_OPENAI_KEY")
+            print(f"✗ Azure OpenAI credentials not configured (missing: {', '.join(missing)})")
 
 
 @app.get("/")
