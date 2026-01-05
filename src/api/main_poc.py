@@ -222,7 +222,9 @@ Respond with ONLY the JSON array, no other text."""
     
     except Exception as e:
         print(f"AI suggestion error: {e}")
-        return []
+        import traceback
+        traceback.print_exc()
+        raise  # Re-raise to see actual error in debug output
 
 
 @app.post("/feedback")
