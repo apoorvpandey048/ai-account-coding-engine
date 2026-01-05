@@ -181,7 +181,8 @@ def suggest(req: SuggestRequest):
 def get_ai_suggestions(invoice_text: str, top_k: int = 3) -> List[Dict]:
     """Get GL account suggestions from Azure OpenAI GPT-4.1-mini."""
     deployment_name = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-4-1-mini")
-    max_tokens = int(os.getenv("AZURE_OPENAI_MAX_OUTPUT_TOKENS", "1000"))
+    # GPT-4.1-mini supports max 32768 completion tokens
+    max_tokens = min(int(os.getenv("AZURE_OPENAI_MAX_OUTPUT_TOKENS", "1000")), 32768)
     temperature = float(os.getenv("AZURE_OPENAI_TEMPERATURE", "0.3"))
     
     prompt = f"""You are an accounting expert. Analyze this invoice line item and suggest the top {top_k} GL accounts.
