@@ -144,6 +144,7 @@ def suggest(req: SuggestRequest):
     
     # Step 2: If no high-confidence suggestions, use Azure OpenAI
     best_confidence = max([s.get("confidence", 0) for s in suggestions], default=0)
+    ai_error = None
     
     if best_confidence < 0.5 and azure_openai_client is not None:
         try:
@@ -153,16 +154,24 @@ def suggest(req: SuggestRequest):
                 method_used = "ai"
         except Exception as e:
             print(f"Azure OpenAI error: {e}")
+            ai_error = str(e)
             # Keep rule-based suggestions as fallback
     
     if not suggestions:
         raise HTTPException(status_code=500, detail="No suggestions available")
     
-    return {
+    response = {
         "text": req.text,
         "suggestions": suggestions[:req.top_k],
-        "method": method_used
+        "method": method_used,
+        "debug": {
+            "best_confidence": best_confidence,
+            "ai_client_available": azure_openai_client is not None,
+            "should_use_ai": best_confidence < 0.5 and azure_openai_client is not None,
+            "ai_error": ai_error
+        }
     }
+    return response
 
 
 def get_ai_suggestions(invoice_text: str, top_k: int = 3) -> List[Dict]:
