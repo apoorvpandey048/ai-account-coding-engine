@@ -164,12 +164,16 @@ def suggest(req: SuggestRequest):
     if not suggestions:
         raise HTTPException(status_code=500, detail="No suggestions available")
     
+    # Calculate final confidence from returned suggestions
+    final_confidence = max([s.get("confidence", 0) for s in suggestions[:req.top_k]], default=0)
+    
     response = {
         "text": req.text,
         "suggestions": suggestions[:req.top_k],
         "method": method_used,
         "debug": {
-            "best_confidence": best_confidence,
+            "initial_confidence": best_confidence,
+            "final_confidence": final_confidence,
             "ai_client_available": azure_openai_client is not None,
             "should_use_ai": best_confidence < 0.5 and azure_openai_client is not None,
             "ai_error": ai_error
