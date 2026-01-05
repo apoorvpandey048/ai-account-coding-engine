@@ -104,6 +104,24 @@ def health():
     }
 
 
+@app.get("/debug/ai-test")
+def test_ai():
+    """Debug endpoint to test Azure OpenAI directly."""
+    if azure_openai_client is None:
+        return {"error": "Azure OpenAI client not available"}
+    
+    try:
+        result = get_ai_suggestions("office supplies paper", top_k=2)
+        return {"success": True, "suggestions": result}
+    except Exception as e:
+        import traceback
+        return {
+            "success": False,
+            "error": str(e),
+            "traceback": traceback.format_exc()
+        }
+
+
 @app.post("/suggest")
 def suggest(req: SuggestRequest):
     suggestions = []
