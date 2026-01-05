@@ -152,9 +152,13 @@ def suggest(req: SuggestRequest):
             if ai_suggestions:
                 suggestions = ai_suggestions
                 method_used = "ai"
+            else:
+                ai_error = "AI returned empty result"
         except Exception as e:
             print(f"Azure OpenAI error: {e}")
-            ai_error = str(e)
+            import traceback
+            traceback.print_exc()
+            ai_error = f"{type(e).__name__}: {str(e)}"
             # Keep rule-based suggestions as fallback
     
     if not suggestions:
