@@ -65,3 +65,4 @@ _internal/
 # Temporary files
 *.tmp
 temp/
+resource-metadata.json
