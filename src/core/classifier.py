@@ -30,8 +30,8 @@ class SemanticClassifier:
             r"kleinmengen", r"energie", r"pfand"
         ],
         "IT & Software": [
-            r"software", r"lizenz", r"licence", r"license", r"cad", r"it support", r"server",
-            r"digital", r"cloud", r"saas", r"itunes", r"adobe"
+            r"software", r"lizenz", r"cad", r"it support", r"server",
+            r"digital", r"cloud", r"saas"
         ],
         "Tools": [
             r"werkzeug", r"bohr", r"schleif", r"säge", r"trennscheibe",
@@ -131,18 +131,6 @@ class SemanticClassifier:
         # Select category with most matches
         best_category = max(matches, key=matches.get)
         match_count = matches[best_category]
-
-        # Edge-case overrides: prefer Consumables for screws even when material keywords present
-        if "consumables" in (c.lower() for c in matches.keys()) and "material" in (c.lower() for c in matches.keys()):
-            if re.search(r"schraub", text_lower, re.IGNORECASE):
-                best_category = "Consumables"
-                match_count = matches.get(best_category, match_count)
-
-        # Prefer Operating Supplies when 'öl' appears, even if 'maschine' also matches (e.g., 'Maschinenöl')
-        if "operating supplies" in (c.lower() for c in matches.keys()) and "tools" in (c.lower() for c in matches.keys()):
-            if re.search(r"\böl\b|maschinenöl|schmier", text_lower, re.IGNORECASE):
-                best_category = "Operating Supplies"
-                match_count = matches.get(best_category, match_count)
         
         # Calculate confidence based on match count and uniqueness
         confidence = min(0.5 + (match_count * 0.15), 0.95)

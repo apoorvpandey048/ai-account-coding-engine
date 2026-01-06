@@ -1,26 +1,3 @@
-# AI Account Coding Engine
-
-Minimal repo scaffolding for the PoC.
-
-Purpose
-- Backend service that suggests GL accounts for invoice line items using rule-assisted logic and LLMs.
-
-Quickstart (local)
-1. Create a virtualenv and install dependencies:
-```bash
-python -m venv .venv
-source .venv/bin/activate  # or .venv\Scripts\Activate.ps1 on Windows
-pip install -r requirements.txt
-```
-2. Run tests:
-```bash
-pytest -q
-```
-
-Repo structure
-- `gl_predictor.py` - core rule-based predictor used for PoC.
-- `invoice_text_with_accounts.csv` - sample data provided by client.
-- `tests/` - unit tests.
 # AI Account Coding Service
 
 A production-ready AI service that generates General Ledger (GL) account coding suggestions for invoice line items using a hybrid approach of rule-based logic and Azure OpenAI LLM.

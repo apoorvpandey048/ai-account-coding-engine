@@ -11,34 +11,15 @@ import sys
 from pathlib import Path
 import difflib
 
-# Add root directory to path for imports
+# Add root directory to path for gl_predictor import
 root_dir = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(root_dir))
 
-# Import configuration
-from src.utils.config import get_settings
-settings = get_settings()
-
 try:
     from gl_predictor import GLPredictor
-    print("[OK] GLPredictor module imported successfully")
 except Exception as e:
-    print(f"[WARN] Could not import GLPredictor: {e}")
-    import traceback
-    traceback.print_exc()
+    print(f"Warning: Could not import GLPredictor: {e}")
     GLPredictor = None
-
-# Import Milestone 1 core engine
-try:
-    from src.core.engine import AccountCodingEngine
-    from src.core.classifier import SemanticClassifier
-    from src.core.mapper import AccountMapper
-    print("[OK] Core engine modules imported successfully")
-except Exception as e:
-    print(f"[WARN] Could not import core engine: {e}")
-    import traceback
-    traceback.print_exc()
-    AccountCodingEngine = None
 
 # Azure OpenAI imports
 try:
@@ -54,7 +35,6 @@ app = FastAPI(title="GL Predictor API POC")
 # Global instances
 predictor = None
 azure_openai_client = None
-core_engine = None
 
 
 class SuggestRequest(BaseModel):
@@ -71,31 +51,25 @@ class FeedbackRequest(BaseModel):
 
 @app.on_event("startup")
 def startup_event():
-    global predictor, azure_openai_client, core_engine
-    
-    print("=" * 60)
-    print("Starting up GL Predictor API...")
-    print("=" * 60)
+    global predictor, azure_openai_client
     
     # Initialize rule-based predictor
     predictor = None
     try:
         if GLPredictor is not None:
             predictor = GLPredictor()
-            print("[OK] GLPredictor loaded successfully")
-        else:
-            print("[ERROR] GLPredictor module was not imported")
+            print("✓ GLPredictor loaded")
     except Exception as e:
-        print(f"[ERROR] GLPredictor failed to initialize: {e}")
-        import traceback
-        traceback.print_exc()
+        print(f"✗ GLPredictor failed: {e}")
     
     # Initialize Azure OpenAI client
     azure_openai_client = None
     if OPENAI_AVAILABLE:
-        endpoint = settings.AZURE_OPENAI_ENDPOINT
-        api_key = settings.AZURE_OPENAI_KEY
-        api_version = settings.AZURE_OPENAI_API_VERSION
+        endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+        api_key = os.getenv("AZURE_OPENAI_KEY")
+        api_version = os.getenv("AZURE_OPENAI_API_VERSION", "2024-08-01-preview")
+        
+        print(f"DEBUG: endpoint={endpoint}, api_key={'[SET]' if api_key else '[MISSING]'}, api_version={api_version}")
         
         if endpoint and api_key:
             try:
@@ -104,37 +78,16 @@ def startup_event():
                     api_key=api_key,
                     api_version=api_version
                 )
-                print(f"[OK] Azure OpenAI client initialized")
-                print(f"     Endpoint: {endpoint}")
-                print(f"     Deployment: {settings.AZURE_OPENAI_DEPLOYMENT_NAME}")
-                print(f"     Model: {settings.AZURE_OPENAI_MODEL}")
-                print(f"     Temperature: {settings.AZURE_OPENAI_TEMPERATURE}")
+                print("✓ Azure OpenAI client initialized")
             except Exception as e:
-                print(f"[ERROR] Azure OpenAI init failed: {e}")
+                print(f"✗ Azure OpenAI init failed: {e}")
                 import traceback
                 traceback.print_exc()
         else:
-            print("[WARN] Azure OpenAI not configured (missing endpoint or key)")
-            print(f"     Endpoint: {'SET' if endpoint else 'MISSING'}")
-            print(f"     API Key: {'SET' if api_key else 'MISSING'}")
             missing = []
             if not endpoint: missing.append("AZURE_OPENAI_ENDPOINT")
             if not api_key: missing.append("AZURE_OPENAI_KEY")
-            print(f"[WARN] Azure OpenAI credentials not configured (missing: {', '.join(missing)})")
-    
-    # Initialize Milestone 1 core engine
-    core_engine = None
-    try:
-        if AccountCodingEngine is not None:
-            core_engine = AccountCodingEngine(azure_openai_client=azure_openai_client)
-            print("[OK] Core engine initialized successfully")
-        else:
-            print("[WARN] Core engine modules not imported")
-    except Exception as e:
-        print(f"[ERROR] Core engine init failed: {e}")
-        import traceback
-        traceback.print_exc()
-
+            print(f"✗ Azure OpenAI credentials not configured (missing: {', '.join(missing)})")
 
 
 @app.get("/")
@@ -172,10 +125,6 @@ def test_ai():
 
 @app.post("/suggest")
 def suggest(req: SuggestRequest):
-    # Validate text is not empty
-    if not req.text or req.text.strip() == "":
-        raise HTTPException(status_code=400, detail="Text field cannot be empty")
-    
     suggestions = []
     method_used = "none"
     
@@ -194,27 +143,12 @@ def suggest(req: SuggestRequest):
         except Exception as e:
             print(f"Rule-based predictor error: {e}")
     
-    # Step 2: If no high-confidence suggestions, use semantic classifier
+    # Step 2: If no high-confidence suggestions, use Azure OpenAI
     best_confidence = max([s.get("confidence", 0) for s in suggestions], default=0)
     ai_error = None
     
-    # Use core engine if confidence < 0.7 and OpenAI not available, OR if confidence < 0.5 with OpenAI
-    if best_confidence < 0.7 and azure_openai_client is None and core_engine is not None:
-        try:
-            result = core_engine.suggest_accounts(req.text, top_k=req.top_k)
-            if result and result.get("suggestions"):
-                # Convert core engine format to API format
-                suggestions = result["suggestions"]
-                method_used = f"semantic-{result.get('metadata', {}).get('method', 'unknown')}"
-            else:
-                ai_error = "Core engine returned no suggestions"
-        except Exception as e:
-            print(f"Core engine error: {e}")
-            import traceback
-            traceback.print_exc()
-            ai_error = f"Core engine: {type(e).__name__}: {str(e)}"
-    elif best_confidence < 0.7 and azure_openai_client is not None:
-        # Use Azure OpenAI if available
+    # Lower threshold from 0.5 to 0.7 to trigger AI more often
+    if best_confidence < 0.7 and azure_openai_client is not None:
         try:
             ai_suggestions = get_ai_suggestions(req.text, req.top_k)
             if ai_suggestions:
@@ -252,10 +186,10 @@ def suggest(req: SuggestRequest):
 
 def get_ai_suggestions(invoice_text: str, top_k: int = 3) -> List[Dict]:
     """Get GL account suggestions from Azure OpenAI GPT-4.1-mini."""
-    deployment_name = settings.AZURE_OPENAI_DEPLOYMENT_NAME
+    deployment_name = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-4-1-mini")
     # GPT-4.1-mini supports max 32768 completion tokens
-    max_tokens = min(settings.AZURE_OPENAI_MAX_OUTPUT_TOKENS, 32768)
-    temperature = settings.AZURE_OPENAI_TEMPERATURE
+    max_tokens = min(int(os.getenv("AZURE_OPENAI_MAX_OUTPUT_TOKENS", "1000")), 32768)
+    temperature = float(os.getenv("AZURE_OPENAI_TEMPERATURE", "0.3"))
 
     # Build allowed accounts list from the rule-based predictor (training data)
     allowed_accounts = []
@@ -375,10 +309,4 @@ def feedback(fb: FeedbackRequest):
             # non-fatal — feedback persisted locally
             pass
 
-    return {
-        "status": "ok", 
-        "id": entry["id"], 
-        "timestamp": entry["timestamp"],
-        "text": entry["text"],
-        "selected_account": entry["selected_account"]
-    }
+    return {"status": "ok", "id": entry["id"]}

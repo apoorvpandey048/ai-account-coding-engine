@@ -15,26 +15,14 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
     
     # API settings
-    API_KEY_REQUIRED: bool = False
+    API_KEY_REQUIRED: bool = True
     VALID_API_KEYS: List[str] = []
     
     # Azure OpenAI settings
     AZURE_OPENAI_ENDPOINT: str = ""
-    AZURE_OPENAI_KEY: str = ""
-    AZURE_OPENAI_API_VERSION: str = "2024-08-01-preview"
-    AZURE_OPENAI_DEPLOYMENT_NAME: str = "gpt-4-1-mini"
-    AZURE_OPENAI_MODEL: str = "gpt-4.1-mini"
-    AZURE_OPENAI_MAX_INPUT_TOKENS: int = 3000000
-    AZURE_OPENAI_MAX_CACHED_INPUT_TOKENS: int = 1200000
-    AZURE_OPENAI_MAX_OUTPUT_TOKENS: int = 1000000
-    AZURE_OPENAI_TEMPERATURE: float = 0.3
-    AZURE_OPENAI_TOP_P: float = 1.0
-    
-    # Storage settings
-    STORAGE_ACCOUNT_NAME: str = ""
-    CONTAINER_RAW: str = "raw-invoices"
-    CONTAINER_PROCESSED: str = "processed"
-    CONTAINER_FEEDBACK: str = "feedback"
+    AZURE_OPENAI_API_KEY: str = ""
+    AZURE_OPENAI_API_VERSION: str = "2024-02-15-preview"
+    AZURE_OPENAI_DEPLOYMENT_NAME: str = "gpt-4"
     
     # Chart of accounts (can be loaded from file or database)
     CHART_OF_ACCOUNTS_FILE: str = ""
