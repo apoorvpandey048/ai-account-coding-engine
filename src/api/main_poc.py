@@ -9,6 +9,7 @@ from datetime import datetime
 from typing import Optional, List, Dict
 import sys
 from pathlib import Path
+import difflib
 
 # Add root directory to path for gl_predictor import
 root_dir = Path(__file__).parent.parent.parent
@@ -146,7 +147,8 @@ def suggest(req: SuggestRequest):
     best_confidence = max([s.get("confidence", 0) for s in suggestions], default=0)
     ai_error = None
     
-    if best_confidence < 0.5 and azure_openai_client is not None:
+    # Lower threshold from 0.5 to 0.7 to trigger AI more often
+    if best_confidence < 0.7 and azure_openai_client is not None:
         try:
             ai_suggestions = get_ai_suggestions(req.text, req.top_k)
             if ai_suggestions:
@@ -188,48 +190,89 @@ def get_ai_suggestions(invoice_text: str, top_k: int = 3) -> List[Dict]:
     # GPT-4.1-mini supports max 32768 completion tokens
     max_tokens = min(int(os.getenv("AZURE_OPENAI_MAX_OUTPUT_TOKENS", "1000")), 32768)
     temperature = float(os.getenv("AZURE_OPENAI_TEMPERATURE", "0.3"))
-    
-    prompt = f"""You are an accounting expert. Analyze this invoice line item and suggest the top {top_k} GL accounts.
+
+    # Build allowed accounts list from the rule-based predictor (training data)
+    allowed_accounts = []
+    try:
+        if predictor is not None and hasattr(predictor, 'df'):
+            allowed_accounts = list(predictor.df['suggested_account'].unique())
+    except Exception:
+        allowed_accounts = []
+
+    # Fallback: try to load from a file if predictor not available
+    if not allowed_accounts:
+        try:
+            import pandas as _pd
+            _df = _pd.read_csv('data/train_split.csv')
+            allowed_accounts = list(_df['suggested_account'].unique())
+        except Exception:
+            allowed_accounts = []
+
+    # Compose prompt that includes a strict list of valid accounts and an instruction
+    accounts_list_text = "\n".join([f"- {a}" for a in allowed_accounts]) if allowed_accounts else "(no accounts provided)"
+
+    prompt = f"""You are an accounting assistant. Analyze this invoice line item and suggest the top {top_k} GL accounts.
+
+Valid accounts (exact strings) that you MUST choose from (do NOT invent new accounts):
+{accounts_list_text}
 
 Invoice text: "{invoice_text}"
 
-Provide your response as a JSON array with exactly {top_k} suggestions, each with:
-- "account": GL account code and name (e.g., "6200 - Cloud Services")
+Return a JSON array with exactly {top_k} suggestions. Each suggestion must be an object with:
+- "account": exact account string from the valid accounts list above
 - "confidence": number between 0 and 1
-- "explanation": brief reason (1 sentence)
+- "explanation": one short sentence explaining why
 
-Example format:
-[
-  {{"account": "6200 - IT Services", "confidence": 0.85, "explanation": "Cloud hosting is an IT infrastructure expense."}},
-  {{"account": "5400 - Technology", "confidence": 0.75, "explanation": "Alternative technology expense category."}},
-  {{"account": "6100 - Professional Services", "confidence": 0.60, "explanation": "Could be categorized as external service."}}
-]
+Respond with ONLY the JSON array, and nothing else. If you cannot find {top_k} valid accounts, return as many as you can but not more than {top_k}.
+"""
 
-Respond with ONLY the JSON array, no other text."""
-    
     try:
         response = azure_openai_client.chat.completions.create(
             model=deployment_name,
             messages=[
-                {"role": "system", "content": "You are a precise accounting assistant. Always respond with valid JSON only."},
+                {"role": "system", "content": "You are a precise accounting assistant. Always respond with valid JSON only and choose only from the provided valid accounts."},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=max_tokens,
             temperature=temperature
         )
-        
+
         content = response.choices[0].message.content.strip()
-        # Parse JSON response
         import json as json_lib
-        suggestions = json_lib.loads(content)
+        try:
+            suggestions = json_lib.loads(content)
+        except Exception:
+            # If model returned extraneous text, try to extract JSON substring
+            import re
+            m = re.search(r"(\[.*\])", content, re.S)
+            if m:
+                suggestions = json_lib.loads(m.group(1))
+            else:
+                raise
+
+        # Validate suggestions: ensure accounts are in allowed_accounts; attempt fuzzy match for minor differences
+        validated = []
+        for s in suggestions:
+            acct = s.get('account') if isinstance(s, dict) else None
+            if acct and acct in allowed_accounts:
+                validated.append(s)
+            else:
+                # attempt fuzzy matching
+                if acct and allowed_accounts:
+                    close = difflib.get_close_matches(acct, allowed_accounts, n=1, cutoff=0.7)
+                    if close:
+                        s['account'] = close[0]
+                        validated.append(s)
+                        continue
+                # discard non-matching suggestion
         
-        return suggestions[:top_k]
-    
+        return validated[:top_k]
+
     except Exception as e:
         print(f"AI suggestion error: {e}")
         import traceback
         traceback.print_exc()
-        raise  # Re-raise to see actual error in debug output
+        raise
 
 
 @app.post("/feedback")
