@@ -8,6 +8,7 @@ on:
 env:
   AZURE_WEBAPP_NAME: ai-acc-coding-poc
   PYTHON_VERSION: '3.11'
+  ACR_NAME: aiacctacr01
 
 jobs:
   build-and-deploy:
@@ -17,45 +18,39 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ env.PYTHON_VERSION }}
-    
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-    
-    - name: Run tests
-      run: |
-        pip install pytest pytest-cov
-        pytest tests/ --cov=src --cov-report=term || echo "Tests completed with warnings"
-    
-    - name: Create deployment package
-      run: |
-        # Remove files not needed in production
-        rm -rf deliverables/ _internal/ .pytest_cache temp/ 3_examples/1*.json 3_examples/2*.json 3_examples/3*.json
-        
     - name: Azure Login
       uses: azure/login@v2
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Zip deploy via az
+    - name: Build and push image with ACR Tasks
+      env:
+        ACR_NAME: ${{ env.ACR_NAME }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        # Build the Docker image in Azure (ACR Tasks) and push to the registry
+        az acr build --registry $ACR_NAME --image ai-account-coding:${IMAGE_TAG} --file Dockerfile .
+
+    - name: Configure Web App to use ACR image
+      env:
+        AZURE_WEBAPP_NAME: ${{ env.AZURE_WEBAPP_NAME }}
+        ACR_NAME: ${{ env.ACR_NAME }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        # Point the Web App to the image we just pushed
+        az webapp config container set \
+          --name $AZURE_WEBAPP_NAME \
+          --resource-group ai-account-coding \
+          --docker-custom-image-name $ACR_NAME.azurecr.io/ai-account-coding:${IMAGE_TAG} \
+          --docker-registry-server-url https://$ACR_NAME.azurecr.io
+
+        # Restart the app to pick up the new image
+        az webapp restart --name $AZURE_WEBAPP_NAME --resource-group ai-account-coding
+    
+    - name: Deployment summary & health check
       env:
         AZURE_WEBAPP_NAME: ${{ env.AZURE_WEBAPP_NAME }}
       run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt || true
-        zip -r deploy-package.zip . -x "*.git*" "deliverables/*" "_internal/*" "venv/*" ".venv/*" "deploy-package.zip" "deploy.zip" "demo_results.json" "3_examples/*" "data/all_items.csv"
-        az webapp deployment source config-zip \
-          --resource-group ai-account-coding \
-          --name $AZURE_WEBAPP_NAME \
-          --src deploy-package.zip
-    
-    - name: Deployment summary
-      run: |
-        echo "✅ Deployment completed successfully"
-        echo "🌐 App URL: https://ai-acc-coding-poc-fhg9e0bphrdab8b8.westeurope-01.azurewebsites.net"
-        echo "🔍 Health check: https://ai-acc-coding-poc-fhg9e0bphrdab8b8.westeurope-01.azurewebsites.net/health"
+        echo "✅ Deployment steps completed"
+        echo "🌐 App URL: https://$(az webapp show --name $AZURE_WEBAPP_NAME --resource-group ai-account-coding --query defaultHostName -o tsv)"
+        echo "🔍 Health check: https://$(az webapp show --name $AZURE_WEBAPP_NAME --resource-group ai-account-coding --query defaultHostName -o tsv)/health"
