@@ -38,6 +38,7 @@ class AccountCodingEngine:
         line_amount: Optional[float] = None,
         product_group: Optional[str] = None,
         po_reference: Optional[str] = None,
+        pos: Optional[str] = None,
         top_k: int = 3
     ) -> Dict[str, any]:
         """Generate GL account coding suggestions for an invoice line item.
@@ -77,12 +78,14 @@ class AccountCodingEngine:
         )
         
         # Step 2: Map category to GL accounts
+        # Pass through Pos if provided in caller metadata (mapper can use it)
         suggestions = self.mapper.map_to_accounts(
             category=classification["category"],
             classification_confidence=classification["confidence"],
             invoice_text=invoice_text,
             supplier=supplier,
-            top_k=top_k
+            top_k=top_k,
+            pos=pos
         )
         
         logger.info(f"Generated {len(suggestions)} account suggestions")
@@ -102,7 +105,8 @@ class AccountCodingEngine:
                 "unit_price": unit_price,
                 "line_amount": line_amount,
                 "product_group": product_group,
-                "po_reference": po_reference
+                "po_reference": po_reference,
+                "pos": pos
             }
         }
         
@@ -136,6 +140,7 @@ class AccountCodingEngine:
                     line_amount=item.get("line_amount"),
                     product_group=item.get("product_group"),
                     po_reference=item.get("po_reference"),
+                    pos=item.get("pos"),
                     top_k=top_k
                 )
                 results.append(result)

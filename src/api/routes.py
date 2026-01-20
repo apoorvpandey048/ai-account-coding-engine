@@ -42,6 +42,7 @@ async def suggest_account(
             line_amount=request.line_item.line_amount,
             product_group=request.line_item.product_group,
             po_reference=request.line_item.po_reference,
+            pos=request.line_item.pos,
             top_k=request.top_k
         )
         

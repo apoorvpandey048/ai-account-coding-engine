@@ -1,9 +1,13 @@
 """Semantic classification of invoice line items using rule-based and LLM logic."""
 
 import re
+import os
+import pandas as pd
+from pathlib import Path
 from typing import Dict, List, Optional
 from openai import AzureOpenAI
 import logging
+import random
 
 logger = logging.getLogger(__name__)
 
@@ -11,43 +15,50 @@ logger = logging.getLogger(__name__)
 class SemanticClassifier:
     """Classifies invoice line items into semantic categories."""
     
-    # Rule-based keywords for common categories
+    # Rule-based keywords for common categories (enhanced with training data patterns)
     CATEGORY_KEYWORDS = {
         "Material": [
             r"rohr", r"edelstahl", r"kupfer", r"aluminium", r"holz", r"metall",
-            r"stahl", r"blech", r"profil", r"material", r"rohstoff"
+            r"stahl", r"blech", r"profil", r"material", r"rohstoff",
+            r"kabel", r"elektrokabel", r"nym", r"holzlatte", r"spanplatte",
+            r"mineralwolle", r"isolation"
         ],
         "Consumables": [
             r"schraube", r"nagel", r"dichtung", r"klebe", r"band", r"draht",
-            r"scheibe", r"verpackung", r"kartusche", r"verbrauch", r"kleinteile"
+            r"scheibe", r"verpackung", r"kartusche", r"verbrauch", r"kleinteile",
+            r"led\s+(bau)?strahler", r"baustrahler", r"weichschaumstoff",
+            r"schlauch", r"hydraulik", r"bauchemie", r"dichtungsband",
+            r"verbrauchsmaterial", r"rapido", r"drahtbinder"
         ],
         "Transport": [
             r"transport", r"fracht", r"lieferung", r"versand", r"spedition",
-            r"logistik", r"zustellung", r"expresszuschlag"
+            r"logistik", r"zustellung", r"expresszuschlag", r"baustelle",
+            r"inland", r"ausland", r"zoll"
         ],
         "Surcharge": [
-            r"zuschlag", r"gebühr", r"pauschale", r"zoll", r"bearbeitungs",
-            r"kleinmengen", r"energie", r"pfand"
+            r"zuschlag", r"gebühr", r"pauschale", r"bearbeitungs",
+            r"kleinmengen", r"energie", r"pfand", r"paletten"
         ],
         "IT & Software": [
-            r"software", r"lizenz", r"cad", r"it support", r"server",
+            r"software", r"lizenz", r"cad", r"it\s+support", r"server",
             r"digital", r"cloud", r"saas"
         ],
         "Tools": [
             r"werkzeug", r"bohr", r"schleif", r"säge", r"trennscheibe",
-            r"maschine", r"gerät", r"dewalt", r"bosch"
+            r"maschine", r"gerät", r"dewalt", r"bosch", r"koffer"
         ],
         "Service": [
             r"service", r"wartung", r"reparatur", r"montage", r"beratung",
-            r"projektmanagement", r"engineering", r"dienstleistung"
+            r"projektmanagement", r"engineering", r"dienstleistung",
+            r"reparaturkosten", r"linie\s+[a-z]"
         ],
         "Safety": [
             r"schutz", r"helm", r"brille", r"handschuh", r"sicherheit",
-            r"ppe", r"arbeitsschutz"
+            r"ppe", r"arbeitsschutz", r"nitril", r"en\s*\d+"
         ],
         "Operating Supplies": [
-            r"öl", r"schmierstoff", r"kühlflüssigkeit", r"reinigung",
-            r"betriebsstoff", r"hilfsstoff"
+            r"öl", r"maschinenöl", r"schmierstoff", r"schmierfett",
+            r"kühlflüssigkeit", r"reinigung", r"betriebsstoff", r"hilfsstoff"
         ]
     }
     
@@ -58,6 +69,35 @@ class SemanticClassifier:
             azure_client: Azure OpenAI client for LLM-based classification
         """
         self.azure_client = azure_client
+        self.training_examples = self._load_training_examples()
+    
+    def _load_training_examples(self) -> List[Dict[str, str]]:
+        """Load training examples from invoice_text_with_accounts.csv.
+        
+        Returns:
+            List of training examples with text and account
+        """
+        try:
+            # Try to load from data directory
+            data_dir = Path(__file__).parent.parent.parent / "data"
+            csv_path = data_dir / "invoice_text_with_accounts.csv"
+            
+            if csv_path.exists():
+                df = pd.read_csv(csv_path)
+                examples = []
+                for _, row in df.iterrows():
+                    examples.append({
+                        "text": row["extracted_invoice_text"],
+                        "account": row["suggested_account"]
+                    })
+                logger.info(f"Loaded {len(examples)} training examples")
+                return examples
+            else:
+                logger.warning(f"Training data not found at {csv_path}")
+                return []
+        except Exception as e:
+            logger.error(f"Failed to load training examples: {e}")
+            return []
     
     def classify(
         self,
@@ -100,6 +140,48 @@ class SemanticClassifier:
         logger.warning("No LLM available, using rule-based classification only")
         return rule_result
     
+    def _get_few_shot_examples(self, invoice_text: str, num_examples: int = 12) -> str:
+        """Select diverse few-shot examples from training data.
+        
+        Args:
+            invoice_text: Current text to classify
+            num_examples: Number of examples to include
+            
+        Returns:
+            Formatted string with examples
+        """
+        if not self.training_examples:
+            return "(No training examples available)"
+        
+        # Get diverse examples by account type
+        account_groups = {}
+        for ex in self.training_examples:
+            account = ex["account"]
+            if account not in account_groups:
+                account_groups[account] = []
+            account_groups[account].append(ex)
+        
+        # Select 1-2 examples per unique account type
+        selected = []
+        for account, examples in account_groups.items():
+            # Pick one random example from this account
+            selected.append(random.choice(examples))
+            if len(selected) >= num_examples:
+                break
+        
+        # Shuffle for variety
+        random.shuffle(selected)
+        
+        # Format examples
+        examples_list = []
+        for i, ex in enumerate(selected[:num_examples], 1):
+            # Extract category from account name
+            account_parts = ex["account"].split("–")
+            category_hint = account_parts[1].strip() if len(account_parts) > 1 else "Other"
+            examples_list.append(f"{i}. \"{ex['text']}\" → {ex['account']}")
+        
+        return "\n".join(examples_list)
+    
     def _rule_based_classify(self, invoice_text: str) -> Dict[str, any]:
         """Classify using keyword matching rules.
         
@@ -110,6 +192,12 @@ class SemanticClassifier:
             Classification result with category, confidence, method, reasoning
         """
         text_lower = invoice_text.lower()
+        
+        # Check for high-confidence direct patterns first
+        direct_match = self._check_direct_patterns(text_lower)
+        if direct_match:
+            return direct_match
+        
         matches = {}
         
         for category, keywords in self.CATEGORY_KEYWORDS.items():
@@ -136,7 +224,7 @@ class SemanticClassifier:
         confidence = min(0.5 + (match_count * 0.15), 0.95)
         if len(matches) > 1:
             # Reduce confidence if multiple categories matched
-            confidence *= 0.8
+            confidence *= 0.85
         
         return {
             "category": best_category,
@@ -145,13 +233,46 @@ class SemanticClassifier:
             "reasoning": f"Matched {match_count} keyword(s) for {best_category}"
         }
     
+    def _check_direct_patterns(self, text_lower: str) -> Optional[Dict[str, any]]:
+        """Check for high-confidence direct pattern matches.
+        
+        Args:
+            text_lower: Lowercased invoice text
+            
+        Returns:
+            Classification result if direct match found, None otherwise
+        """
+        # Direct patterns with very high confidence
+        direct_patterns = [
+            (r"elektrokabel|kabel\s+nym", "Material", "electrical cable pattern"),
+            (r"led\s+baustrahler|baustrahler", "Consumables", "LED lighting pattern"),
+            (r"hydraulikschlauch|hydraulik.*schlauch", "Consumables", "hydraulic hose pattern"),
+            (r"isolationsmaterial|mineralwolle", "Consumables", "insulation material pattern"),
+            (r"beratungsleistung|engineering", "Service", "consulting service pattern"),
+            (r"reparaturkosten|reparatur.*maschine", "Service", "repair service pattern"),
+            (r"werkzeugkoffer", "Tools", "tool storage pattern"),
+            (r"energiezuschlag|kleinmengenzuschlag", "Surcharge", "surcharge pattern"),
+            (r"zollgebühren|zoll.*import", "Transport", "customs/import pattern"),
+        ]
+        
+        for pattern, category, desc in direct_patterns:
+            if re.search(pattern, text_lower):
+                return {
+                    "category": category,
+                    "confidence": 0.95,
+                    "method": "rule",
+                    "reasoning": f"Direct match: {desc}"
+                }
+        
+        return None
+    
     def _llm_classify(
         self,
         invoice_text: str,
         supplier: Optional[str],
         product_group: Optional[str]
     ) -> Dict[str, any]:
-        """Classify using Azure OpenAI LLM.
+        """Classify using Azure OpenAI LLM with enhanced prompting and training examples.
         
         Args:
             invoice_text: The invoice line item text
@@ -163,31 +284,57 @@ class SemanticClassifier:
         """
         categories = list(self.CATEGORY_KEYWORDS.keys())
         
-        prompt = f"""You are an expert accountant specialized in classifying invoice line items.
+        # Select diverse few-shot examples from training data
+        examples_text = self._get_few_shot_examples(invoice_text)
+        
+        prompt = f"""You are an expert German accounting classifier for construction/manufacturing invoice line items.
 
-Classify the following invoice line item into ONE of these categories:
-{', '.join(categories)}
+CATEGORY DEFINITIONS:
+• Material: Raw materials, metals, pipes, cables, sheets, lumber used in production or construction
+• Consumables: Small parts, screws, tapes, packaging, adhesives, supplies consumed regularly
+• Transport: Shipping costs, logistics, freight, delivery charges
+• Surcharge: Additional fees, customs duties, small quantity surcharges, energy fees, deposits
+• IT & Software: Software licenses, digital tools, cloud services, IT support
+• Tools: Power tools, equipment, machines, tool storage used for work (not consumed)
+• Service: Professional services like repair, consulting, maintenance, engineering, installation
+• Safety: Personal protective equipment (PPE), safety gear, helmets, gloves, goggles
+• Operating Supplies: Oils, lubricants, coolants, cleaning supplies, greases for operations
+
+TRAINING EXAMPLES FROM YOUR COMPANY:
+{examples_text}
+
+TASK:
+Classify this invoice line item into ONE category based on the patterns above.
 
 Invoice line: {invoice_text}
 {f'Supplier: {supplier}' if supplier else ''}
 {f'Product group: {product_group}' if product_group else ''}
 
-Respond ONLY with valid JSON in this exact format (no additional text):
+Think step-by-step:
+1. What specific item or service is being purchased?
+2. Which training examples are most similar to this item?
+3. How would this be used in a construction/manufacturing business?
+4. Is it consumed, used repeatedly, or a one-time service?
+5. Which category from the definitions best matches this usage?
+
+Respond with JSON only:
 {{
-  "category": "<one of the listed categories>",
-  "confidence": <float between 0 and 1>,
-  "reasoning": "<brief explanation>"
+  "category": "<one of: {', '.join(categories)}>",
+  "confidence": <0.0 to 1.0>,
+  "reasoning": "<explain your classification in one sentence>"
 }}"""
         
         try:
+            model_name = os.environ.get('AZURE_OPENAI_DEPLOYMENT_NAME', 'gpt-4')
             response = self.azure_client.chat.completions.create(
-                model="gpt-4",  # Will be configured via deployment name
+                model=model_name,
                 messages=[
-                    {"role": "system", "content": "You are a precise accounting classifier. Always respond with valid JSON only."},
+                    {"role": "system", "content": "You are a precise accounting classifier for German construction/manufacturing invoices. Always respond with valid JSON only. Use the category definitions and examples provided."},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.1,
-                max_tokens=200
+                temperature=0.0,
+                max_tokens=250,
+                response_format={"type": "json_object"}
             )
             
             result_text = response.choices[0].message.content.strip()
@@ -199,6 +346,12 @@ Respond ONLY with valid JSON in this exact format (no additional text):
             # Validate category
             if result.get("category") not in categories:
                 result["category"] = "Other"
+            
+            # Calibrate confidence to reduce overconfidence
+            # If LLM is very confident (>0.9), reduce slightly
+            original_confidence = result.get("confidence", 0.5)
+            if original_confidence > 0.9:
+                result["confidence"] = 0.85 + (original_confidence - 0.9) * 0.5
             
             result["method"] = "llm"
             return result
@@ -239,18 +392,38 @@ Respond ONLY with valid JSON in this exact format (no additional text):
                 "reasoning": f"Rule and LLM agree: {llm_result['reasoning']}"
             }
         
-        # If they disagree, trust LLM more but reduce confidence
+        # If rule has very high confidence (>=0.9), trust it more
+        if rule_result["confidence"] >= 0.9:
+            return {
+                "category": rule_result["category"],
+                "confidence": rule_result["confidence"] * 0.95,
+                "method": "hybrid_rule",
+                "reasoning": f"High-confidence rule: {rule_result['reasoning']}"
+            }
+        
+        # If rule has good confidence (>=0.65) and LLM confidence gap is small (<0.25)
+        confidence_gap = llm_result["confidence"] - rule_result["confidence"]
+        if rule_result["confidence"] >= 0.65 and confidence_gap < 0.25:
+            return {
+                "category": rule_result["category"],
+                "confidence": rule_result["confidence"] * 0.90,
+                "method": "hybrid_rule",
+                "reasoning": f"Rule with reasonable confidence: {rule_result['reasoning']}"
+            }
+        
+        # Otherwise, if LLM has higher confidence, use it (with calibration)
         if llm_result["confidence"] > rule_result["confidence"]:
             return {
                 "category": llm_result["category"],
-                "confidence": llm_result["confidence"] * 0.85,
+                "confidence": llm_result["confidence"] * 0.88,
                 "method": "hybrid_llm",
                 "reasoning": f"LLM override: {llm_result['reasoning']}"
             }
         
+        # Default to rule result
         return {
             "category": rule_result["category"],
-            "confidence": rule_result["confidence"] * 0.85,
+            "confidence": rule_result["confidence"] * 0.90,
             "method": "hybrid_rule",
             "reasoning": f"Rule preferred: {rule_result['reasoning']}"
         }

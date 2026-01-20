@@ -15,6 +15,7 @@ class LineItemRequest(BaseModel):
     line_amount: Optional[float] = Field(None, description="Total line amount", ge=0)
     product_group: Optional[str] = Field(None, description="Product group classification")
     po_reference: Optional[str] = Field(None, description="Purchase order reference")
+    pos: Optional[str] = Field(None, description="Invoice line position (Pos) when available")
     
     class Config:
         json_schema_extra = {
@@ -26,7 +27,8 @@ class LineItemRequest(BaseModel):
                 "unit_price": 12.50,
                 "line_amount": 625.00,
                 "product_group": "Metal Pipes",
-                "po_reference": "PO-2026-001"
+                    "po_reference": "PO-2026-001",
+                    "pos": "10"
             }
         }
 
@@ -121,7 +123,8 @@ class SuggestResponse(BaseModel):
                 "metadata": {
                     "invoice_text": "Transportkosten Lieferung Baustelle Zürich",
                     "supplier": "Express Logistics",
-                    "line_amount": 150.00
+                    "line_amount": 150.00,
+                    "pos": "20"
                 }
             }
         }

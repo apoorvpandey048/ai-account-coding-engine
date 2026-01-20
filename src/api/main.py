@@ -1,6 +1,6 @@
 """Main FastAPI application for AI Account Coding Service."""
 
-from fastapi import FastAPI, HTTPException, Depends, Security, status
+from fastapi import FastAPI, HTTPException, Depends, Security, status, Request
 from fastapi.security import APIKeyHeader
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -20,6 +20,15 @@ from .models import (
     HealthResponse
 )
 from .routes import router
+import os
+
+# Azure SDK imports for debug endpoint
+try:
+    from azure.identity import DefaultAzureCredential
+    from azure.storage.blob import BlobClient
+except Exception:
+    DefaultAzureCredential = None
+    BlobClient = None
 
 # Setup logging
 setup_logging()
@@ -89,26 +98,36 @@ app.add_middleware(
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
 
-async def verify_api_key(api_key: str = Security(api_key_header)):
-    """Verify API key from request header."""
+async def verify_api_key(request: Request, api_key: str = Security(api_key_header)):
+    """Verify API key from request header.
+
+    Allow CORS preflight (OPTIONS) requests to pass without an API key so
+    the browser can perform the preflight handshake. This avoids the
+    common `TypeError: Failed to fetch` client-side error caused when
+    the OPTIONS request is rejected by authentication.
+    """
+    # Allow CORS preflight without API key
+    if request.method == "OPTIONS":
+        return None
+
     settings = get_settings()
-    
+
     if not settings.API_KEY_REQUIRED:
         return None
-    
+
     if not api_key:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="API Key required"
         )
-    
+
     # Check against configured API keys
     if api_key not in settings.VALID_API_KEYS:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Invalid API Key"
         )
-    
+
     return api_key
 
 
@@ -150,6 +169,34 @@ async def health_check():
             settings.AZURE_OPENAI_API_KEY
         )
     )
+
+
+@app.get("/debug/fetch-dataset")
+async def debug_fetch_dataset():
+    """Debug endpoint: attempt to read DATASET_BLOB_URL using managed identity.
+
+    Returns basic blob metadata if successful, otherwise an error message.
+    """
+    dataset_url = os.getenv("DATASET_BLOB_URL")
+    if not dataset_url:
+        return {"ok": False, "error": "DATASET_BLOB_URL not configured"}
+
+    if DefaultAzureCredential is None or BlobClient is None:
+        return {"ok": False, "error": "Azure SDK not available in environment"}
+
+    try:
+        cred = DefaultAzureCredential()
+        blob = BlobClient.from_blob_url(dataset_url, credential=cred)
+        props = blob.get_blob_properties()
+        return {
+            "ok": True,
+            "length": props.size,
+            "content_type": props.content_settings.content_type,
+            "last_modified": props.last_modified.isoformat()
+        }
+    except Exception as e:
+        logger.exception("Failed to fetch dataset blob")
+        return {"ok": False, "error": str(e)}
 
 
 # Error handlers

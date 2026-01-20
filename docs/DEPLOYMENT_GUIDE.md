@@ -559,3 +559,382 @@ APPLICATIONINSIGHTS_CONNECTION_STRING=<instrumentation-key>
 ---
 
 **Last Updated:** January 2026
+---
+
+## CI/CD Pipeline Setup
+
+### GitHub Actions Workflow
+
+Create `.github/workflows/deploy-azure.yml`:
+
+```yaml
+name: Deploy to Azure App Service
+
+on:
+  push:
+    branches: [main, dev]
+  workflow_dispatch:
+
+env:
+  AZURE_WEBAPP_NAME: ai-acc-coding-poc
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run tests
+      run: |
+        pip install pytest pytest-cov
+        pytest tests/ --cov=src --cov-report=term
+    
+    - name: Deploy to Azure Web App
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        package: .
+```
+
+### Setting Up GitHub Secrets
+
+```bash
+# Get publish profile
+az webapp deployment list-publishing-profiles \
+  --name ai-acc-coding-poc \
+  --resource-group ai-account-coding \
+  --xml
+
+# Add to GitHub Secrets:
+# Repository Settings → Secrets and variables → Actions → New repository secret
+# Name: AZURE_WEBAPP_PUBLISH_PROFILE
+# Value: <paste XML content>
+```
+
+### Azure DevOps Pipeline
+
+Create `azure-pipelines.yml`:
+
+```yaml
+trigger:
+  branches:
+    include:
+      - main
+      - dev
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  azureSubscription: 'ai-account-coding-connection'
+  webAppName: 'ai-acc-coding-poc'
+  pythonVersion: '3.11'
+
+stages:
+- stage: Build
+  displayName: Build stage
+  jobs:
+  - job: BuildJob
+    displayName: Build
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '$(pythonVersion)'
+      displayName: 'Use Python $(pythonVersion)'
+    
+    - script: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+      displayName: 'Install dependencies'
+    
+    - script: |
+        pip install pytest pytest-cov
+        pytest tests/ --cov=src --cov-report=xml --cov-report=html
+      displayName: 'Run tests'
+    
+    - task: PublishTestResults@2
+      inputs:
+        testResultsFiles: '**/test-results.xml'
+        testRunTitle: 'Python Tests'
+    
+    - task: PublishCodeCoverageResults@1
+      inputs:
+        codeCoverageTool: Cobertura
+        summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
+    
+    - task: ArchiveFiles@2
+      inputs:
+        rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
+        includeRootFolder: false
+        archiveType: 'zip'
+        archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+      displayName: 'Archive files'
+    
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+        ArtifactName: 'drop'
+
+- stage: Deploy
+  displayName: Deploy stage
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+  - deployment: DeployWeb
+    displayName: Deploy to Azure App Service
+    environment: 'production'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: AzureWebApp@1
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              appType: 'webAppLinux'
+              appName: '$(webAppName)'
+              package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
+              runtimeStack: 'PYTHON|3.11'
+              startUpCommand: 'uvicorn src.api.main:app --host 0.0.0.0 --port 8000'
+```
+
+---
+
+## Current Azure App Service Configuration
+
+Based on `resource-metadata.json`:
+
+### Resource Details
+- **Subscription ID:** `d56814fc-acb7-400b-8534-e44c3f850702`
+- **Resource Group:** `ai-account-coding`
+- **App Service Name:** `ai-acc-coding-poc`
+- **Default Hostname:** `ai-acc-coding-poc-fhg9e0bphrdab8b8.westeurope-01.azurewebsites.net`
+- **Location:** `westeurope`
+- **Managed Identity Principal ID:** `37f89824-cf61-40d2-b572-beb0da48d1b1`
+
+### Configured App Settings
+
+| Setting | Value | Description |
+|---------|-------|-------------|
+| `API_KEY_REQUIRED` | `true` | Enable API key authentication |
+| `VALID_API_KEYS` | `dev-key-001` | Accepted API keys (comma-separated) |
+| `AZURE_OPENAI_KEY` | `<secret>` | Azure OpenAI API key |
+| `AZURE_OPENAI_ENDPOINT` | `https://a-i-1.openai.azure.com` | Azure OpenAI endpoint |
+| `AZURE_OPENAI_API_VERSION` | `2024-02-15-preview` | API version |
+| `AZURE_OPENAI_DEPLOYMENT_NAME` | `gpt-4-1-mini` | Model deployment |
+| `DATASET_BLOB_URL` | `https://aiacctcodingst01...` | Azure Blob Storage dataset URL |
+
+### Storage Account
+- **Name:** `aiacctcodingst01`
+- **Container:** `datasets` (blob: `all_invoices_mapped.json`)
+- **Static Website:** `https://aiacctcodingst01.z6.web.core.windows.net/`
+- **RBAC Role:** Storage Blob Data Contributor assigned to App Service managed identity
+
+### Key Vault
+- **Name:** `aiacct-kv`
+- **URI:** `https://aiacct-kv.vault.azure.net/`
+- **Purpose:** Future secrets management (migration planned)
+
+### CORS Configuration
+- **Allowed Origins:** `https://aiacctcodingst01.z6.web.core.windows.net` (static website)
+- **Allowed Methods:** `GET, POST, PUT, DELETE, OPTIONS`
+- **Allowed Headers:** `*`
+
+---
+
+## Deployment Workflow
+
+### 1. Manual Deployment (Current)
+
+```bash
+# From local machine
+cd c:\Users\Apoor\ai-account-coding-engine\ai-account-coding-engine
+
+# Login to Azure
+az login
+
+# Set subscription
+az account set --subscription d56814fc-acb7-400b-8534-e44c3f850702
+
+# Create deployment package
+zip -r deploy.zip . -x "*.git*" ".env.example" "venv/*" "__pycache__/*" "deliverables/*" "_internal/*" "3_examples/*"
+
+# Deploy to App Service
+az webapp deployment source config-zip \
+  --resource-group ai-account-coding \
+  --name ai-acc-coding-poc \
+  --src deploy.zip
+
+# Restart app
+az webapp restart \
+  --name ai-acc-coding-poc \
+  --resource-group ai-account-coding
+```
+
+### 2. Automated CI/CD (Recommended)
+
+**Trigger:** Push to `main` or `dev` branch
+**Steps:**
+1. GitHub Actions detects push
+2. Runs linters and tests
+3. Builds deployment package (excludes `.git`, `deliverables/`, `_internal/`, test outputs)
+4. Deploys to Azure App Service using publish profile
+5. Restarts web app automatically
+6. Sends deployment notification
+
+**Setup:** Follow "CI/CD Pipeline Setup" section above
+
+---
+
+## Environment Variables Management
+
+### Development (.env - committed to private repo)
+
+```bash
+# Azure OpenAI Configuration
+AZURE_OPENAI_ENDPOINT=https://a-i-1.openai.azure.com
+AZURE_OPENAI_KEY=<real-key>
+AZURE_OPENAI_API_VERSION=2024-02-15-preview
+AZURE_OPENAI_DEPLOYMENT_NAME=gpt-4-1-mini
+
+# Azure Storage
+STORAGE_ACCOUNT_NAME=aiacctcodingst01
+STORAGE_ACCOUNT_KEY=<real-key>
+DATASET_BLOB_URL=https://aiacctcodingst01.blob.core.windows.net/datasets/all_invoices_mapped.json
+
+# API Configuration
+API_KEY_REQUIRED=true
+VALID_API_KEYS=dev-key-001
+SERVICE_NAME=ai-account-coding-service
+ENVIRONMENT=development
+LOG_LEVEL=DEBUG
+```
+
+**Note:** `.env` is committed to repository (private repo - secrets safe). Used by:
+- Local development (demo_local.py, testing)
+- Azure OpenAI client initialization
+- Storage access for dataset uploads
+
+### Production (Azure App Service Settings)
+
+Configured via:
+```bash
+az webapp config appsettings set \
+  --resource-group ai-account-coding \
+  --name ai-acc-coding-poc \
+  --settings KEY=VALUE
+```
+
+Or via Azure Portal → App Service → Configuration → Application settings
+
+**Recommendation:** Migrate secrets to Key Vault for production (see "Security Configuration" section)
+
+---
+
+## Post-Deployment Verification
+
+### 1. Health Check
+
+```bash
+curl https://ai-acc-coding-poc-fhg9e0bphrdab8b8.westeurope-01.azurewebsites.net/health
+```
+
+Expected response:
+```json
+{
+  "status": "healthy",
+  "version": "1.0.0",
+  "azure_openai_available": true
+}
+```
+
+### 2. API Authentication Test
+
+```bash
+curl -X POST "https://ai-acc-coding-poc-fhg9e0bphrdab8b8.westeurope-01.azurewebsites.net/api/v1/suggest" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: dev-key-001" \
+  -d '{
+    "line_item": {
+      "invoice_text": "Test item",
+      "pos": "10"
+    },
+    "top_k": 3
+  }'
+```
+
+Expected: JSON response with suggestions array
+
+### 3. Check Application Logs
+
+```bash
+az webapp log tail \
+  --name ai-acc-coding-poc \
+  --resource-group ai-account-coding
+```
+
+---
+
+## Troubleshooting Deployment Issues
+
+### Issue: "ModuleNotFoundError" after deployment
+
+**Cause:** Missing dependencies in `requirements.txt`
+**Fix:** Ensure all packages are listed, redeploy
+
+### Issue: "502 Bad Gateway"
+
+**Cause:** App startup failure (port mismatch, import errors)
+**Fix:** Check logs, verify startup command:
+```bash
+az webapp config show \
+  --name ai-acc-coding-poc \
+  --resource-group ai-account-coding \
+  --query "linuxFxVersion"
+```
+
+### Issue: "401 Unauthorized" for authenticated requests
+
+**Cause:** App setting `VALID_API_KEYS` not synced
+**Fix:** Verify app settings:
+```bash
+az webapp config appsettings list \
+  --name ai-acc-coding-poc \
+  --resource-group ai-account-coding \
+  --query "[?name=='VALID_API_KEYS'].value"
+```
+
+### Issue: CORS errors in demo page
+
+**Cause:** Static website origin not in allowed CORS origins
+**Fix:** Add origin:
+```bash
+az webapp cors add \
+  --name ai-acc-coding-poc \
+  --resource-group ai-account-coding \
+  --allowed-origins "https://aiacctcodingst01.z6.web.core.windows.net"
+```
+
+---
+
+## Next Steps
+
+1. **Set up CI/CD:** Configure GitHub Actions or Azure DevOps pipeline
+2. **Migrate to Key Vault:** Move secrets from app settings to Key Vault
+3. **Add monitoring:** Configure Application Insights dashboards and alerts
+4. **Performance testing:** Load test with Apache Bench or Azure Load Testing
+5. **Security hardening:** Enable Web Application Firewall (WAF), DDoS protection
+6. **Documentation:** Update API_USAGE_GUIDE.md with production URLs
