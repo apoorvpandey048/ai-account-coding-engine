@@ -28,10 +28,6 @@ venv/
 ENV/
 env/
 
-# Environment variables
-.env
-.env.local
-
 # IDE
 .vscode/
 .idea/
@@ -58,6 +54,11 @@ htmlcov/
 
 # Internal files (not for client delivery)
 _internal/
+deliverables/
+
+# Example/test data (keep only all_Invoice_fields.json)
+3_examples/*
+!3_examples/all_Invoice_fields.json
 
 # Azure
 .azure/

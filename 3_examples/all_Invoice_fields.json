@@ -1,0 +1,751 @@
+{
+  "1_Invoice_fields.json": {
+    "Version": "3.0",
+    "Fields": {
+      "Artikel": [
+        {
+          "Anzahl": "20 M",
+          "Art-Nr": "100028956",
+          "Betrag": "224.00",
+          "Bezeichnung": "Streng duct PP-HM Sickerrohr SN4\nØ150mm L5m",
+          "Pos": "10",
+          "Preis": "11.20"
+        },
+        {
+          "Anzahl": "15M",
+          "Art-Nr": "100028908",
+          "Betrag": "160.50",
+          "Bezeichnung": "Streng duct PP-HM Kanalrohr SN4\nØ160mm L5m",
+          "Pos": "20",
+          "Preis": "10.70"
+        },
+        {
+          "Anzahl": "5M",
+          "Art-Nr": "100028904",
+          "Betrag": "25.50",
+          "Bezeichnung": "Streng duct PP-HM Kanalrohr SN4\nØ110mm L5m",
+          "Pos": "30",
+          "Preis": "5.10"
+        },
+        {
+          "Anzahl": "4 ST",
+          "Art-Nr": "100028552",
+          "Betrag": "84.00",
+          "Bezeichnung": "Streng duct PP-HM Abzweiger 45°\nSN8 (SN12) Ø160/110mm",
+          "Pos": "40",
+          "Preis": "21.00"
+        },
+        {
+          "Anzahl": "6 ST",
+          "Art-Nr": "100028387",
+          "Betrag": "51.00",
+          "Bezeichnung": "Streng duct PP-HM Bogen 45° SN8\n(SN12)\nØ160mm",
+          "Pos": "50",
+          "Preis": "8.50"
+        },
+        {
+          "Anzahl": "4 ST",
+          "Art-Nr": "100028741",
+          "Betrag": "31.20",
+          "Bezeichnung": "Streng duct PP-HM Überschiebemuffe\nSN8 (SN12) Ø160mm",
+          "Pos": "60",
+          "Preis": "7.80"
+        },
+        {
+          "Anzahl": "2 ST",
+          "Art-Nr": "100093496",
+          "Betrag": "28.00",
+          "Bezeichnung": "PP Schachtfutter Grip\nØ160mm inkl. Dichtung",
+          "Pos": "70",
+          "Preis": "14.00"
+        },
+        {
+          "Anzahl": "2 ST",
+          "Art-Nr": "100059389",
+          "Betrag": "9.00",
+          "Bezeichnung": "Streng duct PP-HM Muffendeckel\nØ160mm",
+          "Pos": "80",
+          "Preis": "4.50"
+        },
+        {
+          "Anzahl": "3 ST",
+          "Art-Nr": "100028708",
+          "Betrag": "9.60",
+          "Bezeichnung": "Streng duct PP-HM Überschiebemuffe\nSN8 (SN12) Ø110mm",
+          "Pos": "90",
+          "Preis": "3.20"
+        },
+        {
+          "Anzahl": "5 ST",
+          "Art-Nr": "100028383",
+          "Betrag": "19.00",
+          "Bezeichnung": "Streng duct PP-HM Bogen 45° SN8\n(SN12)\nØ110mm",
+          "Pos": "100",
+          "Preis": "3.80"
+        },
+        {
+          "Anzahl": "2 ST",
+          "Art-Nr": "100028351",
+          "Betrag": "7.60",
+          "Bezeichnung": "Streng duct PP-HM Bogen 30° SN8\n(SN12)\nØ110mm",
+          "Pos": "110",
+          "Preis": "3.80"
+        },
+        {
+          "Anzahl": "2 ST",
+          "Art-Nr": "100028269",
+          "Betrag": "7.60",
+          "Bezeichnung": "Streng duct PP-HM Bogen 15° SN8\n(SN12)\nØ110mm",
+          "Pos": "120",
+          "Preis": "3.80"
+        },
+        {
+          "Anzahl": "2 KRT",
+          "Art-Nr": "100114087",
+          "Betrag": "13.20",
+          "Bezeichnung": "MAXIMUM Gleitmittel für PE, PP & PVC\nTube à 500ml",
+          "Pos": "130",
+          "Preis": "6.60"
+        }
+      ]
+    }
+  },
+  "1.1_Invoice_fields.json": {
+    "Version": "3.0",
+    "Fields": {
+      "Artikel": [
+        {
+          "Anzahl": "80 BD",
+          "Art-Nr": "100036892",
+          "Betrag": "1'176.00",
+          "Bezeichnung": "Rapido Drahtbinder geschweisst\n10cm 1000St. (20 Bd/Sack)",
+          "Pos": "10",
+          "Preis": "14.70"
+        },
+        {
+          "Anzahl": "30 BD",
+          "Art-Nr": "100036898",
+          "Betrag": "579.00",
+          "Bezeichnung": "Rapido Drahtbinder geschweisst\n16cm 1000St. (15 Bd/Sack)",
+          "Pos": "20",
+          "Preis": "19.30"
+        },
+        {
+          "Anzahl": "12 ST",
+          "Art-Nr": "100122606",
+          "Betrag": "144.00",
+          "Bezeichnung": "MAXIMUM Schalungsschaum grau\n750ml B3",
+          "Pos": "30",
+          "Preis": "12.00"
+        },
+        {
+          "Anzahl": "34.1 M",
+          "Art-Nr": "100068986",
+          "Betrag": "682.00",
+          "Bezeichnung": "Zembord 25 Abschalung\n250mm L1.10m",
+          "Pos": "40",
+          "Preis": "20.00"
+        },
+        {
+          "Anzahl": "1 ST",
+          "Art-Nr": "500000053",
+          "Betrag": "21.00",
+          "Bezeichnung": "Palette SBB, 120x80cm",
+          "Pos": "999",
+          "Preis": "21.00"
+        },
+        {
+          "Anzahl": "40 BD",
+          "Art-Nr": "100036894",
+          "Betrag": "604.00",
+          "Bezeichnung": "Rapido Drahtbinder geschweisst\n12cm 1000St. (20 Bd/Sack)",
+          "Pos": "10",
+          "Preis": "15.10"
+        },
+        {
+          "Anzahl": "40 BD",
+          "Art-Nr": "100036896",
+          "Betrag": "712.00",
+          "Bezeichnung": "Rapido Drahtbinder geschweisst\n14cm 1000St. (20 Bd/Sack)",
+          "Pos": "20",
+          "Preis": "17.80"
+        }
+      ]
+    }
+  },
+  "1.2_Invoice_fields.json": {
+    "Version": "3.0",
+    "Fields": {
+      "Artikel": [
+        {
+          "Anzahl": "1.056 TS",
+          "Art-Nr": "100105956",
+          "Betrag": "2'101.44",
+          "Bezeichnung": "Kalksandstein K 18\n18x14x25cm",
+          "Pos": "10",
+          "Preis": "1'990.00"
+        },
+        {
+          "Anzahl": "1 ST",
+          "Art-Nr": "200000036",
+          "Betrag": "266.11",
+          "Bezeichnung": "Transportkosten",
+          "Pos": "20",
+          "Preis": "266.11"
+        },
+        {
+          "Anzahl": "1.2 TS",
+          "Art-Nr": "100105949",
+          "Betrag": "1'891.20",
+          "Bezeichnung": "Kalksandstein K 15\n14.5x14x25cm",
+          "Pos": "30",
+          "Preis": "1'576.00"
+        },
+        {
+          "Anzahl": "1 ST",
+          "Art-Nr": "200000036",
+          "Betrag": "240.00",
+          "Bezeichnung": "Transportkosten",
+          "Pos": "40",
+          "Preis": "240.00"
+        },
+        {
+          "Anzahl": "0.4 TS",
+          "Art-Nr": "100105951",
+          "Betrag": "521.60",
+          "Bezeichnung": "Kalksandstein K 15\n14.5x14x12cm 1/2 Stein",
+          "Pos": "50",
+          "Preis": "1'304.00"
+        },
+        {
+          "Anzahl": "1 ST",
+          "Art-Nr": "200000036",
+          "Betrag": "47.20",
+          "Bezeichnung": "Transportkosten",
+          "Pos": "60",
+          "Preis": "47.20"
+        },
+        {
+          "Anzahl": "0.48 TS",
+          "Art-Nr": "100105954",
+          "Betrag": "654.72",
+          "Bezeichnung": "Kalksandstein K 15\n14.5x6.5x25cm",
+          "Pos": "70",
+          "Preis": "1'364.00"
+        },
+        {
+          "Anzahl": "1 ST",
+          "Art-Nr": "200000036",
+          "Betrag": "56.64",
+          "Bezeichnung": "Transportkosten",
+          "Pos": "80",
+          "Preis": "56.64"
+        },
+        {
+          "Anzahl": "0.16 TS",
+          "Art-Nr": "100105955",
+          "Betrag": "264.00",
+          "Bezeichnung": "Kalksandstein K 15\n14.5x9x25cm",
+          "Pos": "90",
+          "Preis": "1'650.00"
+        },
+        {
+          "Anzahl": "1 ST",
+          "Art-Nr": "200000036",
+          "Betrag": "20.80",
+          "Bezeichnung": "Transportkosten",
+          "Pos": "100",
+          "Preis": "20.80"
+        },
+        {
+          "Anzahl": "26 ST",
+          "Art-Nr": "500000053",
+          "Betrag": "650.00",
+          "Bezeichnung": "Palette SBB, 120x80cm",
+          "Pos": "110",
+          "Preis": "25.00"
+        },
+        {
+          "Anzahl": "1 ST",
+          "Art-Nr": "200000028",
+          "Betrag": "143.00",
+          "Bezeichnung": "Energiezuschlag",
+          "Pos": "120",
+          "Preis": "143.00"
+        },
+        {
+          "Anzahl": "1.68 TS",
+          "Art-Nr": "100105949",
+          "Betrag": "2'647.68",
+          "Bezeichnung": "Kalksandstein K 15\n14.5x14x25cm",
+          "Pos": "10",
+          "Preis": "1'576.00"
+        },
+        {
+          "Anzahl": "1 ST",
+          "Art-Nr": "200000036",
+          "Betrag": "336.00",
+          "Bezeichnung": "Transportkosten",
+          "Pos": "20",
+          "Preis": "336.00"
+        },
+        {
+          "Anzahl": "14 ST",
+          "Art-Nr": "500000053",
+          "Betrag": "350.00",
+          "Bezeichnung": "Palette SBB, 120x80cm",
+          "Pos": "30",
+          "Preis": "25.00"
+        },
+        {
+          "Anzahl": "1 ST",
+          "Art-Nr": "200000026",
+          "Betrag": "180.00",
+          "Bezeichnung": "Kleinmengenzuschlag",
+          "Pos": "40",
+          "Preis": "180.00"
+        },
+        {
+          "Anzahl": "14 ST",
+          "Art-Nr": "200000028",
+          "Betrag": "77.00",
+          "Bezeichnung": "Energiezuschlag",
+          "Pos": "50",
+          "Preis": "5.50"
+        },
+        {
+          "Anzahl": "1.92 TS",
+          "Art-Nr": "900000201",
+          "Betrag": "3'820.80",
+          "Bezeichnung": "Kalksandstein K 18",
+          "Pos": "10",
+          "Preis": "1'990.00"
+        },
+        {
+          "Anzahl": "1 ST",
+          "Art-Nr": "200000036",
+          "Betrag": "483.84",
+          "Bezeichnung": "Transportkosten",
+          "Pos": "20",
+          "Preis": "483.84"
+        },
+        {
+          "Anzahl": "0.32 TS",
+          "Art-Nr": "900000201",
+          "Betrag": "527.36",
+          "Bezeichnung": "K 18/14 halber Stein",
+          "Pos": "30",
+          "Preis": "1'648.00"
+        },
+        {
+          "Anzahl": "1 ST",
+          "Art-Nr": "200000036",
+          "Betrag": "46.72",
+          "Bezeichnung": "Transportkosten",
+          "Pos": "40",
+          "Preis": "46.72"
+        },
+        {
+          "Anzahl": "0.384 TS",
+          "Art-Nr": "100105961",
+          "Betrag": "664.70",
+          "Bezeichnung": "Kalksandstein K 18\n18x6.5x25cm",
+          "Pos": "50",
+          "Preis": "1'731.00"
+        },
+        {
+          "Anzahl": "1 ST",
+          "Art-Nr": "200000036",
+          "Betrag": "45.31",
+          "Bezeichnung": "Transportkosten",
+          "Pos": "60",
+          "Preis": "45.31"
+        },
+        {
+          "Anzahl": "0.256 TS",
+          "Art-Nr": "100105962",
+          "Betrag": "562.43",
+          "Bezeichnung": "Kalksandstein K 18\n18x9x25cm",
+          "Pos": "70",
+          "Preis": "2'197.00"
+        },
+        {
+          "Anzahl": "1 ST",
+          "Art-Nr": "200000036",
+          "Betrag": "41.98",
+          "Bezeichnung": "Transportkosten",
+          "Pos": "80",
+          "Preis": "41.98"
+        },
+        {
+          "Anzahl": "12.9 M",
+          "Art-Nr": "100014020",
+          "Betrag": "603.72",
+          "Bezeichnung": "Betonsturz 6.5/18cm\nL129cm",
+          "Pos": "90",
+          "Preis": "46.80"
+        },
+        {
+          "Anzahl": "1 ST",
+          "Art-Nr": "200000036",
+          "Betrag": "44.51",
+          "Bezeichnung": "Transportkosten",
+          "Pos": "100",
+          "Preis": "44.51"
+        },
+        {
+          "Anzahl": "7.74 M",
+          "Art-Nr": "100013866",
+          "Betrag": "322.76",
+          "Bezeichnung": "Betonsturz 6.5/14.5cm\nL129cm",
+          "Pos": "110",
+          "Preis": "41.70"
+        },
+        {
+          "Anzahl": "1 ST",
+          "Art-Nr": "200000036",
+          "Betrag": "23.61",
+          "Bezeichnung": "Transportkosten",
+          "Pos": "120",
+          "Preis": "23.61"
+        },
+        {
+          "Anzahl": "27 ST",
+          "Art-Nr": "500000053",
+          "Betrag": "675.00",
+          "Bezeichnung": "Palette SBB, 120x80cm",
+          "Pos": "130",
+          "Preis": "25.00"
+        },
+        {
+          "Anzahl": "26 ST",
+          "Art-Nr": "200000028",
+          "Betrag": "143.00",
+          "Bezeichnung": "Energiezuschlag",
+          "Pos": "140",
+          "Preis": "5.50"
+        },
+        {
+          "Anzahl": "36 HM1",
+          "Art-Nr": "100013055",
+          "Betrag": "2'124.00",
+          "Bezeichnung": "Drunterfix mit Aussparung (verstärkt)\n30mm L200cm 50St.",
+          "Pos": "10",
+          "Preis": "59.00"
+        },
+        {
+          "Anzahl": "1.2 HM1",
+          "Art-Nr": "100082241",
+          "Betrag": "268.80",
+          "Bezeichnung": "Dreikantleiste Tanne\n50x50mm L250cm 12St.",
+          "Pos": "40",
+          "Preis": "224.00"
+        },
+        {
+          "Anzahl": "25 M2",
+          "Art-Nr": "100038315",
+          "Betrag": "42.50",
+          "Bezeichnung": "Schaumstoffplatte EPS 20kg/m3\n10mm 100x50cm 50St.",
+          "Pos": "80",
+          "Preis": "1.70"
+        },
+        {
+          "Anzahl": "100 KG",
+          "Art-Nr": "100087832",
+          "Betrag": "110.00",
+          "Bezeichnung": "SikaGrout-314 N\nVergussmörtel 25kg",
+          "Pos": "90",
+          "Preis": "1.10"
+        },
+        {
+          "Anzahl": "1 ST",
+          "Art-Nr": "500000053",
+          "Betrag": "21.00",
+          "Bezeichnung": "Palette SBB, 120x80cm",
+          "Pos": "999",
+          "Preis": "21.00"
+        },
+        {
+          "Anzahl": "1 ST",
+          "Art-Nr": "500000053",
+          "Betrag": "21.00",
+          "Bezeichnung": "Palette SBB, 120x80cm",
+          "Pos": "999",
+          "Preis": "21.00"
+        },
+        {
+          "Anzahl": "60 BD",
+          "Art-Nr": "100036894",
+          "Betrag": "906.00",
+          "Bezeichnung": "Rapido Drahtbinder geschweisst\n12cm 1000St. (20 Bd/Sack)",
+          "Pos": "20",
+          "Preis": "15.10"
+        },
+        {
+          "Anzahl": "60 BD",
+          "Art-Nr": "100036896",
+          "Betrag": "1'068.00",
+          "Bezeichnung": "Rapido Drahtbinder geschweisst\n14cm 1000St. (20 Bd/Sack)",
+          "Pos": "30",
+          "Preis": "17.80"
+        },
+        {
+          "Anzahl": "25 KG",
+          "Art-Nr": "100131745",
+          "Betrag": "30.00",
+          "Bezeichnung": "MAXIMUM Nagel flach\n2.8x70mm 2.5kg",
+          "Pos": "50",
+          "Preis": "1.20"
+        },
+        {
+          "Anzahl": "25 KG",
+          "Art-Nr": "100131747",
+          "Betrag": "30.00",
+          "Bezeichnung": "MAXIMUM Nagel flach\n3.5x90mm 2.5kg",
+          "Pos": "60",
+          "Preis": "1.20"
+        },
+        {
+          "Anzahl": "12 ST",
+          "Art-Nr": "100111926",
+          "Betrag": "118.80",
+          "Bezeichnung": "Profix Injektionsmörtel PIT+ 300\ninkl. 2 Mischer pro Kartusche",
+          "Pos": "70",
+          "Preis": "9.90"
+        }
+      ]
+    }
+  },
+  "2_Invoice_fields.json": {
+    "Version": "3.0",
+    "Fields": {
+      "Artikel": [
+        {
+          "Anzahl": "24.50",
+          "Art-Nr": "2025-40(2).83956",
+          "Betrag": "1'286.25",
+          "Bezeichnung": "Tarif",
+          "Preis": "52.50"
+        },
+        {
+          "Anzahl": "2.00",
+          "Art-Nr": "2025-40(2).83956",
+          "Betrag": "32.00",
+          "Bezeichnung": "Mittagessenentschädigung",
+          "Preis": "16.00"
+        },
+        {
+          "Anzahl": "32.00",
+          "Art-Nr": "2025-41(1).83956",
+          "Betrag": "1'680.00",
+          "Bezeichnung": "Tarif",
+          "Preis": "52.50"
+        },
+        {
+          "Anzahl": "4.00",
+          "Art-Nr": "2025-41(1).83956",
+          "Betrag": "64.00",
+          "Bezeichnung": "Mittagessenentschädigung",
+          "Preis": "16.00"
+        },
+        {
+          "Anzahl": "38.50",
+          "Art-Nr": "2025-42(1).83956",
+          "Betrag": "2'021.25",
+          "Bezeichnung": "Tarif",
+          "Preis": "52.50"
+        },
+        {
+          "Anzahl": "4.00",
+          "Art-Nr": "2025-42(1).83956",
+          "Betrag": "64.00",
+          "Bezeichnung": "Mittagessenentschädigung",
+          "Preis": "16.00"
+        }
+      ]
+    }
+  },
+  "2.1_Invoice_fields.json": {
+    "Version": "3.0",
+    "Fields": {
+      "Artikel": [
+        {
+          "Anzahl": "28.00",
+          "Art-Nr": "2025-48(1).86160",
+          "Betrag": "1'470.00",
+          "Bezeichnung": "Tarif",
+          "Preis": "52.50"
+        },
+        {
+          "Anzahl": "3.00",
+          "Art-Nr": "2025-48(1).86160",
+          "Betrag": "48.00",
+          "Bezeichnung": "Mittagessenentschädigung",
+          "Preis": "16.00"
+        }
+      ]
+    }
+  },
+  "2.2_Invoice_fields.json": {
+    "Version": "3.0",
+    "Fields": {
+      "Artikel": [
+        {
+          "Anzahl": "38.50",
+          "Art-Nr": "2025-48(1).87296",
+          "Betrag": "2'152.15",
+          "Bezeichnung": "Tarif",
+          "Preis": "55.90"
+        },
+        {
+          "Anzahl": "5.00",
+          "Art-Nr": "2025-48(1).87296",
+          "Betrag": "80.00",
+          "Bezeichnung": "Mittagessenentschädigung",
+          "Preis": "16.00"
+        }
+      ]
+    }
+  },
+  "3_Invoice_fields.json": {
+    "Version": "3.0",
+    "Fields": {
+      "Artikel": [
+        {
+          "Anzahl": "1.000",
+          "Art-Nr": "Massschachtunterteil",
+          "Bezeichnung": "CreaBau CENTUB\nmit integrierter Dichtung NW 100 - 200\nDN 1000 H 875 mm h1 675 mm W 210 mm"
+        },
+        {
+          "Anzahl": "1.000",
+          "Art-Nr": "E.28.140.1465.39332",
+          "Betrag": "117.72",
+          "Bezeichnung": "CreaBau Zuschlag CENTUB Massschachtunterteil\nzusätzlicher Leitungsanschluss DN 200, inkl. Dichtung",
+          "Pos": "10.00",
+          "Preis": "218.00 218.00"
+        },
+        {
+          "Anzahl": "1.000",
+          "Art-Nr": "E.28.140.1465.16460",
+          "Betrag": "340.20",
+          "Bezeichnung": "CreaBau CENTUB Schachtringe unbewehrt FK 60 exkl.\nKeilgleitdichtung, inkl. Kugelkopftraganker, DN 1000 H 1000\nmm, W 120 mm",
+          "Pos": "15.00",
+          "Preis": "630.00 630.00"
+        },
+        {
+          "Anzahl": "1.000",
+          "Art-Nr": "E.28.160.1465.20585",
+          "Betrag": "337.50",
+          "Bezeichnung": "CreaBau CENTUB RIKO Schachtring mit Konus\ninkl. Kugelkopftraganker\nDN 1000 D 600 mm, H 500 mm, W 120 mm",
+          "Pos": "20.00",
+          "Preis": "625.00 625.00"
+        },
+        {
+          "Anzahl": "2.000",
+          "Art-Nr": "E.28.140.1465.16012",
+          "Betrag": "57.24",
+          "Bezeichnung": "CreaBau CENTUB\nKeilgleitdichtung DN 1000",
+          "Pos": "25.00",
+          "Preis": "53.00 106.00"
+        },
+        {
+          "Anzahl": "3.000",
+          "Art-Nr": "E.28.150.1465.18492",
+          "Betrag": "179.55",
+          "Bezeichnung": "CreaBau Dachwasserschacht Typ TB Einlauf oben, exkl.\nDeckel, mit Aussparung für Tauchbogen d1 16 cm\nD 30 cm, H 68 cm, W 4 cm\n6 Stk/Palette",
+          "Pos": "30.00",
+          "Preis": "105.00 315.00"
+        },
+        {
+          "Anzahl": "1.000",
+          "Art-Nr": "E.14.990.1465.16000",
+          "Betrag": "38.25",
+          "Bezeichnung": "CreaBau CENTUB Gleitmittel Kessel zu 2 kg",
+          "Pos": "35.00",
+          "Preis": "51.00 51.00"
+        },
+        {
+          "Anzahl": "3.000",
+          "Art-Nr": "E.99.200.1465.26888",
+          "Betrag": "390.00",
+          "Bezeichnung": "CreaBau Kugelkopfkupplungen für Traganker Traglast 1.3 to,\nDepotgebühr",
+          "Pos": "40.00",
+          "Preis": "130.00 390.00"
+        },
+        {
+          "Anzahl": "3.000",
+          "Art-Nr": "E.99.200.1465.26900",
+          "Betrag": "390.00",
+          "Bezeichnung": "CreaBau Kugelkopfkupplungen für Traganker Traglast 2.5 to,\nDepotgebühr",
+          "Pos": "45.00",
+          "Preis": "130.00 390.00"
+        },
+        {
+          "Anzahl": "4.000",
+          "Art-Nr": "B.99.700.1465.74935",
+          "Betrag": "80.00",
+          "Bezeichnung": "Palette Creabeton",
+          "Pos": "50.00",
+          "Preis": "20.00 80.00"
+        },
+        {
+          "Anzahl": "4.260",
+          "Art-Nr": "E.99.150.1465.40930",
+          "Betrag": "63.90",
+          "Bezeichnung": "CreaBau Kranablad < 2 to / Stk pro Tonne",
+          "Pos": "55.00",
+          "Preis": "15.00 63.90"
+        },
+        {
+          "Art-Nr": "CreaBau",
+          "Bezeichnung": "Transportkostenanteil 3 bis 8 to"
+        }
+      ]
+    }
+  },
+  "3.1_Invoice_fields.json": {
+    "Version": "3.0",
+    "Fields": {
+      "Artikel": [
+        {
+          "Art-Nr": "CreaBau GRISON",
+          "Bezeichnung": "Rasengitterstein mit Nocken grau glatt L\n60.2 cm, B 40.2 cm, H 10 cm 7.68 m2/Palette"
+        },
+        {
+          "Anzahl": "4.000",
+          "Art-Nr": "B.99.700.1465.74935",
+          "Betrag": "80.00",
+          "Bezeichnung": "Palette Creabeton",
+          "Pos": "10.00",
+          "Preis": "Pal 20.00"
+        },
+        {
+          "Anzahl": "4.450",
+          "Art-Nr": "E.99.150.1465.40930",
+          "Betrag": "66.75",
+          "Bezeichnung": "CreaBau Kranablad < 2 to / Stk pro Tonne",
+          "Pos": "15.00",
+          "Preis": "to 15.00"
+        },
+        {
+          "Art-Nr": "CreaBau",
+          "Bezeichnung": "Transportkostenanteil 3 bis 8 to"
+        }
+      ]
+    }
+  },
+  "3.3_Invoice_fields.json": {
+    "Version": "3.0",
+    "Fields": {
+      "Artikel": [
+        {
+          "Anzahl": "1.000",
+          "Art-Nr": "B.10.990.1213.10969",
+          "Betrag": "772.75",
+          "Pos": "5.00",
+          "Preis": "772.75"
+        }
+      ]
+    }
+  }
+}

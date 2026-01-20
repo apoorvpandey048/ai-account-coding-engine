@@ -1,0 +1,72 @@
+{
+  "100036892": {
+    "vendor": "100036892",
+    "original": "4200 – Consumables",
+    "matched": false,
+    "matched_code": null,
+    "matched_name": null
+  },
+  "100036898": {
+    "vendor": "100036898",
+    "original": "4200 – Consumables",
+    "matched": false,
+    "matched_code": null,
+    "matched_name": null
+  },
+  "100122606": {
+    "vendor": "100122606",
+    "original": "4200 – Consumables",
+    "matched": false,
+    "matched_code": null,
+    "matched_name": null
+  },
+  "100068986": {
+    "vendor": "100068986",
+    "original": "3000 – Raw Materials",
+    "matched": false,
+    "matched_code": null,
+    "matched_name": null
+  },
+  "500000053": {
+    "vendor": "500000053",
+    "original": "4200 – Consumables",
+    "matched": false,
+    "matched_code": null,
+    "matched_name": null
+  },
+  "100036894": {
+    "vendor": "100036894",
+    "original": "4200 – Consumables",
+    "matched": false,
+    "matched_code": null,
+    "matched_name": null
+  },
+  "100036896": {
+    "vendor": "100036896",
+    "original": "4200 – Consumables",
+    "matched": false,
+    "matched_code": null,
+    "matched_name": null
+  },
+  "100105956": {
+    "vendor": "100105956",
+    "original": "3000 – Raw Materials",
+    "matched": false,
+    "matched_code": null,
+    "matched_name": null
+  },
+  "200000036": {
+    "vendor": "200000036",
+    "original": "4061",
+    "matched": true,
+    "matched_code": "4061",
+    "matched_name": "Fremdtransporte"
+  },
+  "100105949": {
+    "vendor": "100105949",
+    "original": "3000 – Raw Materials",
+    "matched": false,
+    "matched_code": null,
+    "matched_name": null
+  }
+}
