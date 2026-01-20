@@ -66,3 +66,11 @@ deliverables/
 # Temporary files
 *.tmp
 temp/
+
+# Local virtualenv
+.venv/
+
+# Deployment artifacts
+deploy*.zip
+demo_results.json
+*.egg-info
