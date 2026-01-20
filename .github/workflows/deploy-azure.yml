@@ -8,7 +8,6 @@ on:
 env:
   AZURE_WEBAPP_NAME: ai-acc-coding-poc
   PYTHON_VERSION: '3.11'
-  ACR_NAME: aiacctacr01
 
 jobs:
   build-and-deploy:
@@ -18,39 +17,39 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
     - name: Azure Login
       uses: azure/login@v2
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Build and push image with ACR Tasks
-      env:
-        ACR_NAME: ${{ env.ACR_NAME }}
-        IMAGE_TAG: ${{ github.sha }}
+    - name: Configure App Service for Python runtime
       run: |
-        # Build the Docker image in Azure (ACR Tasks) and push to the registry
-        az acr build --registry $ACR_NAME --image ai-account-coding:${IMAGE_TAG} --file Dockerfile .
-
-    - name: Configure Web App to use ACR image
-      env:
-        AZURE_WEBAPP_NAME: ${{ env.AZURE_WEBAPP_NAME }}
-        ACR_NAME: ${{ env.ACR_NAME }}
-        IMAGE_TAG: ${{ github.sha }}
-      run: |
-        # Point the Web App to the image we just pushed
-        az webapp config container set \
-          --name $AZURE_WEBAPP_NAME \
+        az webapp config set \
+          --name ${{ env.AZURE_WEBAPP_NAME }} \
           --resource-group ai-account-coding \
-          --docker-custom-image-name $ACR_NAME.azurecr.io/ai-account-coding:${IMAGE_TAG} \
-          --docker-registry-server-url https://$ACR_NAME.azurecr.io
+          --startup-file "python -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000"
+        
+        az webapp config appsettings set \
+          --name ${{ env.AZURE_WEBAPP_NAME }} \
+          --resource-group ai-account-coding \
+          --settings SCM_DO_BUILD_DURING_DEPLOYMENT=true
 
-        # Restart the app to pick up the new image
-        az webapp restart --name $AZURE_WEBAPP_NAME --resource-group ai-account-coding
+    - name: Deploy to Azure Web App
+      uses: azure/webapps-deploy@v3
+      with:
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
+        package: .
     
     - name: Deployment summary & health check
-      env:
-        AZURE_WEBAPP_NAME: ${{ env.AZURE_WEBAPP_NAME }}
       run: |
-        echo "✅ Deployment steps completed"
-        echo "🌐 App URL: https://$(az webapp show --name $AZURE_WEBAPP_NAME --resource-group ai-account-coding --query defaultHostName -o tsv)"
-        echo "🔍 Health check: https://$(az webapp show --name $AZURE_WEBAPP_NAME --resource-group ai-account-coding --query defaultHostName -o tsv)/health"
+        echo "✅ Deployment completed"
+        APP_URL=$(az webapp show --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group ai-account-coding --query defaultHostName -o tsv)
+        echo "🌐 App URL: https://$APP_URL"
+        echo "🔍 Health check: https://$APP_URL/health"
+        sleep 30
+        curl -f https://$APP_URL/health || echo "⚠️  Health check failed - check logs"
