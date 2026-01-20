@@ -27,10 +27,10 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
       
-      - name: Upload artifact
+      - name: Upload artifact (docs only)
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: 'docs'
       
       - name: Deploy to GitHub Pages
         id: deployment
