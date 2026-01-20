@@ -35,6 +35,7 @@ class Settings(BaseSettings):
         env_file = ".env"
         env_file_encoding = "utf-8"
         case_sensitive = True
+        extra = "allow"  # Allow extra env vars we don't explicitly define
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

@@ -20,10 +20,16 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1", tags=["account-coding"])
 
 
+def get_engine_dependency() -> AccountCodingEngine:
+    """Get engine instance - imported at runtime to avoid circular imports."""
+    from .main import get_engine
+    return get_engine()
+
+
 @router.post("/suggest", response_model=SuggestResponse, status_code=status.HTTP_200_OK)
 async def suggest_account(
     request: SuggestRequest,
-    engine: AccountCodingEngine = Depends()
+    engine: AccountCodingEngine = Depends(get_engine_dependency)
 ):
     """Generate GL account suggestions for a single invoice line item.
     
@@ -60,7 +66,7 @@ async def suggest_account(
 @router.post("/suggest/batch", response_model=List[SuggestResponse], status_code=status.HTTP_200_OK)
 async def suggest_accounts_batch(
     request: BatchSuggestRequest,
-    engine: AccountCodingEngine = Depends()
+    engine: AccountCodingEngine = Depends(get_engine_dependency)
 ):
     """Generate GL account suggestions for multiple invoice line items in batch.
     
@@ -145,13 +151,3 @@ async def submit_feedback(request: FeedbackRequest):
             detail=f"Failed to process feedback: {str(e)}"
         )
 
-
-# Dependency injection for engine
-def get_engine_dependency():
-    """Get engine instance for dependency injection."""
-    from .main import get_engine
-    return Depends(get_engine)
-
-
-# Update route dependencies
-router.dependencies.append(get_engine_dependency())
