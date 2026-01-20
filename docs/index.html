@@ -249,13 +249,13 @@
 
     <div class="demo-card">
       <div class="info-box">
-        <strong>Quick Start:</strong> Enter your API host URL below (e.g., from ngrok or Azure), add API key <code>dev-key-001</code>, and click a button to test the endpoints.
+        <strong>Quick Start:</strong> Run the API locally with <code>python -m uvicorn src.api.main:app --host 0.0.0.0 --port 8005</code>, then expose via ngrok (<code>ngrok http 8005</code>). Enter the ngrok URL below with API key <code>dev-key-001</code>.
       </div>
 
       <div class="config-section">
         <div class="form-group">
           <label>API Host URL</label>
-          <input id="host" type="text" placeholder="https://your-api-host.com" value="http://localhost:8005" />
+          <input id="host" type="text" placeholder="https://your-ngrok-url.ngrok-free.app" value="" />
         </div>
         <div class="form-group">
           <label>API Key</label>
@@ -359,7 +359,12 @@
       const output = document.getElementById('output');
       
       if (!host) {
-        alert('⚠️ Please enter an API host URL');
+        alert('Please enter an API host URL (e.g., from ngrok)');
+        return;
+      }
+      
+      if (!host.startsWith('http')) {
+        alert('API host must start with http:// or https://');
         return;
       }
 
@@ -392,7 +397,7 @@
       } catch (err) {
         statusBadge.className = 'status-badge status-error';
         statusBadge.textContent = 'Network Error';
-        output.textContent = `❌ Error: ${err.message}\n\nMake sure:\n1. The API server is running\n2. The URL is correct\n3. CORS is enabled on the server`;
+        output.textContent = `Error: ${err.message}\n\nTroubleshooting:\n1. Verify API server is running locally (uvicorn command)\n2. Check ngrok tunnel is active (ngrok http 8005)\n3. Use the HTTPS URL from ngrok (not localhost)\n4. Ensure API key is correct: dev-key-001\n\nNote: Azure App Service is currently unavailable due to quota limits.`;
       }
     }
 
@@ -403,7 +408,7 @@
       try {
         JSON.parse(body);
       } catch (e) {
-        alert('❌ Invalid JSON in suggest payload');
+        alert('Invalid JSON in suggest payload: ' + e.message);
         return;
       }
       request('/api/v1/suggest', { method: 'POST', body });
@@ -414,7 +419,7 @@
       try {
         JSON.parse(body);
       } catch (e) {
-        alert('❌ Invalid JSON in batch payload');
+        alert('Invalid JSON in batch payload: ' + e.message);
         return;
       }
       request('/api/v1/suggest/batch', { method: 'POST', body });
@@ -425,7 +430,7 @@
       try {
         JSON.parse(body);
       } catch (e) {
-        alert('❌ Invalid JSON in feedback payload');
+        alert('Invalid JSON in feedback payload: ' + e.message);
         return;
       }
       request('/api/v1/feedback', { method: 'POST', body });
