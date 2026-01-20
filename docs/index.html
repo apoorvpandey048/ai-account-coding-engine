@@ -252,6 +252,15 @@
         <strong>Quick Start:</strong> Run the API locally with <code>python -m uvicorn src.api.main:app --host 0.0.0.0 --port 8005</code>, then expose via ngrok (<code>ngrok http 8005</code>). Enter the ngrok URL below with API key <code>dev-key-001</code>.
       </div>
 
+      <div id="featureStatus" class="info-box" style="background:#e7f3ff; border-left:4px solid #2b6cb0; margin-top:15px; display:none;">
+        <strong>System Features:</strong>
+        <div style="margin-top:8px; font-size:0.9em;">
+          <span id="statusPosMapping" style="color:#666;">Pos-based Mapping: <span style="font-weight:600;">Checking...</span></span><br>
+          <span id="statusLLM" style="color:#666;">LLM Classification: <span style="font-weight:600;">Checking...</span></span><br>
+          <span id="statusTraining" style="color:#666;">Training Examples: <span style="font-weight:600;">Checking...</span></span>
+        </div>
+      </div>
+
       <div class="config-section">
         <div class="form-group">
           <label>API Host URL</label>
@@ -280,13 +289,17 @@
             <div class="form-group">
               <textarea id="suggestPayload">{
   "line_item": {
-    "invoice_text": "Palette SBB, 120x80cm",
-    "supplier": "VendorX",
-    "quantity": "1",
-    "unit_price": 21.0,
-    "line_amount": 21.0
+    "invoice_text": "Streng duct PP-HM Sickerrohr SN4 Ø150mm L5m",
+    "supplier": "Streng AG",
+    "quantity": 20,
+    "unit_of_measure": "M",
+    "unit_price": 11.20,
+    "line_amount": 224.00,
+    "pos": "10",
+    "art_nr": "100028956",
+    "product_group": "Rohre"
   },
-  "top_k": 3
+  "top_k": 5
 }</textarea>
             </div>
           </div>
@@ -301,11 +314,28 @@
             <div class="form-group">
               <textarea id="batchPayload">{
   "line_items": [
-    {"invoice_text": "Palette SBB, 120x80cm", "supplier": "VendorX"},
-    {"invoice_text": "Transportkosten", "supplier": "VendorY"},
-    {"invoice_text": "Kalksandstein K 18", "supplier": "VendorZ"}
+    {
+      "invoice_text": "Rapido Drahtbinder geschweisst 10cm 1000St.",
+      "supplier": "Rapido",
+      "quantity": 80,
+      "unit_of_measure": "BD",
+      "unit_price": 14.70,
+      "line_amount": 1176.00,
+      "pos": "10",
+      "art_nr": "100036892"
+    },
+    {
+      "invoice_text": "Transportkosten",
+      "supplier": "LogistikAG",
+      "quantity": 1,
+      "unit_of_measure": "ST",
+      "unit_price": 266.11,
+      "line_amount": 266.11,
+      "pos": "20",
+      "art_nr": "200000036"
+    }
   ],
-  "top_k": 3
+  "top_k": 5
 }</textarea>
             </div>
           </div>
