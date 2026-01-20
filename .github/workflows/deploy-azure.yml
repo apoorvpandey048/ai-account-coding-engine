@@ -1,3 +1,47 @@
+name: CI/CD — Deploy to Azure Web App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Install dependencies
+        run: |
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Run tests (non-blocking)
+        run: |
+          if [ -f pytest.ini ] || [ -d tests ]; then pytest -q || true; fi
+
+      - name: Create deploy package
+        run: |
+          zip -r deploy.zip src requirements.txt startup.sh data/Kontoplan.csv 3_examples || zip -r deploy.zip src || true
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ai-acc-coding-poc
+          package: deploy.zip
 name: Deploy to Azure App Service
 
 on:
