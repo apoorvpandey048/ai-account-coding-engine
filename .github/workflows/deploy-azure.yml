@@ -22,26 +22,50 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+    - name: Restore app settings
+      run: |
+        az webapp config appsettings set \
+          --name ${{ env.AZURE_WEBAPP_NAME }} \
+          --resource-group ai-account-coding \
+          --settings \
+            STORAGE_ACCOUNT_NAME=aiacctcodingst01 \
+            CONTAINER_RAW=raw-invoices \
+            CONTAINER_PROCESSED=processed \
+            CONTAINER_FEEDBACK=feedback \
+            AZURE_OPENAI_ENDPOINT=https://a-i-1.openai.azure.com \
+            AZURE_OPENAI_DEPLOYMENT_NAME=gpt-4-1-mini \
+            AZURE_OPENAI_MODEL=gpt-4.1-mini \
+            AZURE_OPENAI_API_VERSION=2024-08-01-preview \
+            AZURE_OPENAI_MAX_INPUT_TOKENS=3000000 \
+            AZURE_OPENAI_MAX_CACHED_INPUT_TOKENS=1200000 \
+            AZURE_OPENAI_MAX_OUTPUT_TOKENS=1000000 \
+            AZURE_OPENAI_TEMPERATURE=0.3 \
+            AZURE_OPENAI_TOP_P=1.0 \
+            AZURE_OPENAI_KEY="${{ secrets.AZURE_OPENAI_KEY }}" \
+            VALID_API_KEYS=dev-key-001 \
+            API_KEY_REQUIRED=true \
+            ENABLE_ORYX_BUILD=true \
+            SCM_DO_BUILD_DURING_DEPLOYMENT=true \
+            WEBSITES_PORT=8000
+
     - name: Create deployment package
       run: |
         zip -r deploy.zip . -x "*.git*" "*.github*" "_internal/*" "deliverables/*" "3_examples/*" "tests/*" "*.md" "docker-compose.yml" "Dockerfile"
 
-    - name: Deploy using Kudu REST API (bypass Oryx auto-detection)
+    - name: Deploy using Azure CLI
       run: |
-        # Get publishing credentials
-        USERNAME=$(az webapp deployment list-publishing-credentials --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group ai-account-coding --query publishingUserName -o tsv)
-        PASSWORD=$(az webapp deployment list-publishing-credentials --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group ai-account-coding --query publishingPassword -o tsv)
+        echo "Creating deployment package..."
+        ls -la deploy.zip
         
-        DEPLOYMENT_URL="https://${USERNAME}:${PASSWORD}@ai-acc-coding-poc-fhg9e0bphrdab8b8.scm.westeurope-01.azurewebsites.net/api/zipdeploy"
+        echo "Deploying via Azure CLI..."
+        az webapp deploy \
+          --name ${{ env.AZURE_WEBAPP_NAME }} \
+          --resource-group ai-account-coding \
+          --src-path deploy.zip \
+          --type zip \
+          --timeout 300
         
-        echo "Deploying to Kudu..."
-        curl -X POST "$DEPLOYMENT_URL" \
-          --data-binary @deploy.zip \
-          -H "Content-Type: application/octet-stream" \
-          --max-time 300 \
-          --fail-with-body || (echo "Deployment failed" && exit 1)
-        
-        echo "✅ Deployment uploaded successfully"
+        echo "✅ Deployment completed"
     
     - name: Restart app and check health
       run: |
