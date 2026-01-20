@@ -56,6 +56,10 @@ htmlcov/
 _internal/
 deliverables/
 
+# Data files (too large for deployment, load from blob storage)
+data/*.csv
+!data/sample_chart_of_accounts.json
+
 # Example/test data (keep only all_Invoice_fields.json)
 3_examples/*
 !3_examples/all_Invoice_fields.json

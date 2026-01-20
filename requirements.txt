@@ -23,11 +23,6 @@ gunicorn==21.2.0
 azure-identity>=1.15.0
 azure-storage-blob>=12.14.0
 
-# Text processing and matching
-nltk>=3.8.0
+# Text processing (lightweight, no large model downloads)
 fuzzywuzzy>=0.18.0
 python-Levenshtein>=0.21.0
-
-# Embeddings for semantic search
-sentence-transformers>=2.2.0
-scikit-learn>=1.3.0

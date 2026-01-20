@@ -1,8 +1,5 @@
 #!/bin/bash
 # Azure App Service startup script
 
-# Install dependencies if needed
-pip install -r requirements.txt
-
-# Start the application with gunicorn
-gunicorn -w 4 -k uvicorn.workers.UvicornWorker src.api.main_poc:app --bind 0.0.0.0:8000 --timeout 600
+# Start the application with uvicorn (simpler for Linux App Service)
+python -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --workers 2
