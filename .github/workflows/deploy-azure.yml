@@ -29,15 +29,23 @@ jobs:
 
     - name: Configure App Service for Python runtime
       run: |
+        # Clear any container config first
+        az webapp config container delete \
+          --name ${{ env.AZURE_WEBAPP_NAME }} \
+          --resource-group ai-account-coding || true
+        
+        # Set Python runtime explicitly
         az webapp config set \
           --name ${{ env.AZURE_WEBAPP_NAME }} \
           --resource-group ai-account-coding \
+          --linux-fx-version "PYTHON|${{ env.PYTHON_VERSION }}" \
           --startup-file "python -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000"
         
+        # Enable build during deployment
         az webapp config appsettings set \
           --name ${{ env.AZURE_WEBAPP_NAME }} \
           --resource-group ai-account-coding \
-          --settings SCM_DO_BUILD_DURING_DEPLOYMENT=true
+          --settings SCM_DO_BUILD_DURING_DEPLOYMENT=true WEBSITES_PORT=8000
 
     - name: Deploy to Azure Web App
       uses: azure/webapps-deploy@v3
