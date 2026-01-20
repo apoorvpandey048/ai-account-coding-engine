@@ -2,7 +2,8 @@
 
 import re
 import os
-import pandas as pd
+import json
+import csv
 from pathlib import Path
 from typing import Dict, List, Optional
 from openai import AzureOpenAI
@@ -78,23 +79,67 @@ class SemanticClassifier:
             List of training examples with text and account
         """
         try:
-            # Try to load from data directory
-            data_dir = Path(__file__).parent.parent.parent / "data"
-            csv_path = data_dir / "invoice_text_with_accounts.csv"
-            
+            base_dir = Path(__file__).parent.parent.parent
+            examples = []
+
+            # Primary: load from provided JSON examples (3_examples/all_Invoice_fields.json)
+            json_path = base_dir / "3_examples" / "all_Invoice_fields.json"
+            if json_path.exists():
+                try:
+                    with open(json_path, "r", encoding="utf-8") as fh:
+                        data = json.load(fh)
+                    for _, doc in data.items():
+                        fields = doc.get("Fields", {})
+                        artikel = fields.get("Artikel", [])
+                        for item in artikel:
+                            text = item.get("Bezeichnung") or item.get("Beschreibung") or item.get("Art-Nr") or ""
+                            if not text:
+                                continue
+                            examples.append({"text": text, "account": ""})
+                    logger.info(f"Loaded {len(examples)} training examples from {json_path.name}")
+                    return examples
+                except Exception as e:
+                    logger.warning(f"Failed to parse {json_path}: {e}")
+
+            # Fallback: if a CSV of invoice examples exists in data, try to read it without requiring pandas
+            # Also allow Kontoplan.csv (approved by user) to provide account descriptions
+            kontoplan_path = base_dir / "data" / "Kontoplan.csv"
+            if kontoplan_path.exists():
+                try:
+                    with open(kontoplan_path, encoding='utf-8') as kf:
+                        for line in kf:
+                            line = line.strip()
+                            if not line:
+                                continue
+                            # Expect format: code;'Description'
+                            parts = line.split(";")
+                            if len(parts) >= 2:
+                                code = parts[0].strip().strip("'")
+                                desc = parts[1].strip().strip("'")
+                                if desc:
+                                    examples.append({"text": desc, "account": f"{code} – {desc}"})
+                    logger.info(f"Loaded {len(examples)} Kontoplan entries from {kontoplan_path.name}")
+                except Exception as e:
+                    logger.warning(f"Failed to read Kontoplan {kontoplan_path}: {e}")
+
+            csv_path = base_dir / "data" / "invoice_text_with_accounts.csv"
             if csv_path.exists():
-                df = pd.read_csv(csv_path)
-                examples = []
-                for _, row in df.iterrows():
-                    examples.append({
-                        "text": row["extracted_invoice_text"],
-                        "account": row["suggested_account"]
-                    })
-                logger.info(f"Loaded {len(examples)} training examples")
-                return examples
-            else:
-                logger.warning(f"Training data not found at {csv_path}")
-                return []
+                try:
+                    with open(csv_path, newline='', encoding='utf-8') as csvfile:
+                        reader = csv.DictReader(csvfile)
+                        for row in reader:
+                            text = row.get("extracted_invoice_text") or row.get("text") or ""
+                            account = row.get("suggested_account") or row.get("account") or ""
+                            if text:
+                                examples.append({"text": text, "account": account})
+                    logger.info(f"Loaded {len(examples)} training examples from {csv_path.name}")
+                    return examples
+                except Exception as e:
+                    logger.warning(f"Failed to read CSV fallback {csv_path}: {e}")
+
+            # No allowed training data found — return empty list (rule-based will still operate)
+            logger.warning("No training examples found in allowed files; proceeding with empty examples.")
+            return []
         except Exception as e:
             logger.error(f"Failed to load training examples: {e}")
             return []
