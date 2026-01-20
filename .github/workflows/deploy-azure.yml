@@ -17,47 +17,47 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ env.PYTHON_VERSION }}
-    
     - name: Azure Login
       uses: azure/login@v2
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Configure App Service for Python runtime
+    - name: Create deployment package
       run: |
-        # Clear any container config first
-        az webapp config container delete \
-          --name ${{ env.AZURE_WEBAPP_NAME }} \
-          --resource-group ai-account-coding || true
-        
-        # Set Python runtime explicitly
-        az webapp config set \
-          --name ${{ env.AZURE_WEBAPP_NAME }} \
-          --resource-group ai-account-coding \
-          --linux-fx-version "PYTHON|${{ env.PYTHON_VERSION }}" \
-          --startup-file "python -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000"
-        
-        # Enable build during deployment
-        az webapp config appsettings set \
-          --name ${{ env.AZURE_WEBAPP_NAME }} \
-          --resource-group ai-account-coding \
-          --settings SCM_DO_BUILD_DURING_DEPLOYMENT=true WEBSITES_PORT=8000
+        zip -r deploy.zip . -x "*.git*" "*.github*" "_internal/*" "deliverables/*" "3_examples/*" "tests/*" "*.md" "docker-compose.yml" "Dockerfile"
 
-    - name: Deploy to Azure Web App
-      uses: azure/webapps-deploy@v3
-      with:
-        app-name: ${{ env.AZURE_WEBAPP_NAME }}
-        package: .
-    
-    - name: Deployment summary & health check
+    - name: Deploy using Kudu REST API (bypass Oryx auto-detection)
       run: |
-        echo "✅ Deployment completed"
+        DEPLOYMENT_URL="https://\$ai-acc-coding-poc:$(az webapp deployment list-publishing-credentials --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group ai-account-coding --query publishingPassword -o tsv)@ai-acc-coding-poc-fhg9e0bphrdab8b8.scm.westeurope-01.azurewebsites.net/api/zipdeploy"
+        
+        curl -X POST "$DEPLOYMENT_URL" \
+          --data-binary @deploy.zip \
+          -H "Content-Type: application/octet-stream" \
+          --max-time 300 \
+          --fail-with-body || (echo "Deployment failed" && exit 1)
+    
+    - name: Restart app and check health
+      run: |
+        echo "Restarting app..."
+        az webapp restart --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group ai-account-coding
+        
         APP_URL=$(az webapp show --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group ai-account-coding --query defaultHostName -o tsv)
+        echo "✅ Deployment completed"
         echo "🌐 App URL: https://$APP_URL"
         echo "🔍 Health check: https://$APP_URL/health"
-        sleep 30
-        curl -f https://$APP_URL/health || echo "⚠️  Health check failed - check logs"
+        
+        echo "Waiting for app to start..."
+        sleep 45
+        
+        for i in {1..5}; do
+          if curl -f -s https://$APP_URL/health > /dev/null 2>&1; then
+            echo "✅ Health check passed!"
+            exit 0
+          fi
+          echo "Attempt $i failed, retrying..."
+          sleep 10
+        done
+        
+        echo "⚠️ Health check failed after 5 attempts - check logs"
+        az webapp log tail --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group ai-account-coding --lines 50
+        exit 1
