@@ -70,6 +70,8 @@ data/*.csv
 # Temporary files
 *.tmp
 temp/
+download_logs*.zip
+test_*.py
 
 # Local virtualenv
 .venv/
@@ -77,4 +79,3 @@ temp/
 # Deployment artifacts
 deploy*.zip
 demo_results.json
-*.egg-info

@@ -1,5 +1,10 @@
 # AI Account Coding Service
 
+[![Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://apoorvpandey048.github.io/ai-account-coding-engine/)
+[![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-teal.svg)](https://fastapi.tiangolo.com/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 A production-ready AI service that generates General Ledger (GL) account coding suggestions for invoice line items using a hybrid approach of rule-based logic and Azure OpenAI LLM.
 
 ## 🎯 Overview
@@ -9,6 +14,33 @@ This service receives structured invoice line item data via REST API and returns
 - **Semantic classification** of the invoice item
 - **Explanations** for each suggestion
 - **Feedback handling** for continuous improvement
+
+---
+
+## 🚀 Quick Start
+
+### Try the Live Demo
+
+**👉 [Interactive Demo](https://apoorvpandey048.github.io/ai-account-coding-engine/)**
+
+Use API key: `dev-key-001`
+
+### Run Locally (2 minutes)
+
+```powershell
+# Install dependencies
+pip install -r requirements.txt
+
+# Start server
+python -m uvicorn src.api.main:app --host 0.0.0.0 --port 8005
+
+# Test it
+curl http://localhost:8005/health
+```
+
+**📖 Full guide:** [QUICKSTART.md](QUICKSTART.md)
+
+---
 
 ## ✨ Features
 
