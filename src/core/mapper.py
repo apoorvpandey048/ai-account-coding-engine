@@ -194,6 +194,37 @@ class AccountMapper:
                         "explanation": "Fallback account for uncertain classification"
                     })
         
+        # Ensure we always have exactly top_k suggestions
+        # If still short, add more fallback accounts
+        while len(suggestions) < top_k:
+            # Use "Other" category accounts or repeat existing with lower confidence
+            fallback_accounts = self.chart_of_accounts.get("Other", [])
+            added = False
+            for fallback_account in fallback_accounts:
+                if fallback_account not in [s["account"] for s in suggestions]:
+                    suggestions.append({
+                        "account": fallback_account,
+                        "confidence": round(0.1, 3),
+                        "explanation": "Low-confidence fallback account"
+                    })
+                    added = True
+                    break
+            if not added:
+                # If we've exhausted all unique accounts, pad with the first account at lower confidence
+                if suggestions:
+                    suggestions.append({
+                        "account": suggestions[0]["account"],
+                        "confidence": round(0.05, 3),
+                        "explanation": "Repeated suggestion (insufficient unique accounts)"
+                    })
+                else:
+                    # Ultimate fallback if nothing exists
+                    suggestions.append({
+                        "account": "1220 – Materialvorräte",
+                        "confidence": round(0.05, 3),
+                        "explanation": "Default fallback account"
+                    })
+        
         # Sort by confidence descending
         suggestions.sort(key=lambda x: x["confidence"], reverse=True)
         

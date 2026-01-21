@@ -158,16 +158,56 @@ async def root():
 
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
-    """Health check endpoint."""
+    """Health check endpoint with detailed service status."""
     settings = get_settings()
+    
+    # Check Azure OpenAI configuration
+    azure_openai_configured = bool(
+        settings.AZURE_OPENAI_ENDPOINT and 
+        settings.AZURE_OPENAI_API_KEY
+    )
+    
+    # Test actual connection to Azure OpenAI if configured
+    azure_openai_connected = False
+    llm_classification_active = False
+    if azure_openai_configured and engine:
+        try:
+            # Quick test: check if classifier has Azure client
+            if hasattr(engine, 'classifier') and engine.classifier.azure_client:
+                azure_openai_connected = True
+                llm_classification_active = True
+        except Exception as e:
+            logger.warning(f"Azure OpenAI connection check failed: {e}")
+    
+    # Check training examples loaded
+    training_examples_count = 0
+    if engine and hasattr(engine, 'classifier'):
+        try:
+            if hasattr(engine.classifier, 'training_examples'):
+                training_examples_count = len(engine.classifier.training_examples)
+        except Exception:
+            pass
+    
+    # Check pos mappings loaded
+    pos_mappings_loaded = False
+    pos_count = 0
+    if engine and hasattr(engine, 'mapper'):
+        try:
+            if hasattr(engine.mapper, 'pos_mappings') and engine.mapper.pos_mappings:
+                pos_mappings_loaded = True
+                pos_count = len(engine.mapper.pos_mappings)
+        except Exception:
+            pass
     
     return HealthResponse(
         status="healthy",
         version="1.0.0",
-        azure_openai_available=bool(
-            settings.AZURE_OPENAI_ENDPOINT and 
-            settings.AZURE_OPENAI_API_KEY
-        )
+        azure_openai_available=azure_openai_configured,
+        azure_openai_connected=azure_openai_connected,
+        llm_classification_active=llm_classification_active,
+        training_examples_count=training_examples_count,
+        pos_mappings_loaded=pos_mappings_loaded,
+        pos_count=pos_count
     )
 
 

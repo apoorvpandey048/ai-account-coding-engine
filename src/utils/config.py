@@ -20,7 +20,8 @@ class Settings(BaseSettings):
     
     # Azure OpenAI settings
     AZURE_OPENAI_ENDPOINT: str = ""
-    AZURE_OPENAI_API_KEY: str = ""
+    AZURE_OPENAI_API_KEY: str = ""  # Also accepts AZURE_OPENAI_KEY
+    AZURE_OPENAI_KEY: str = ""  # Alternative key name
     AZURE_OPENAI_API_VERSION: str = "2024-02-15-preview"
     AZURE_OPENAI_DEPLOYMENT_NAME: str = "gpt-4"
     
@@ -47,6 +48,10 @@ class Settings(BaseSettings):
                 for key in self.VALID_API_KEYS.split(",") 
                 if key.strip()
             ]
+        
+        # Support both AZURE_OPENAI_KEY and AZURE_OPENAI_API_KEY
+        if not self.AZURE_OPENAI_API_KEY and self.AZURE_OPENAI_KEY:
+            self.AZURE_OPENAI_API_KEY = self.AZURE_OPENAI_KEY
 
 
 @lru_cache()

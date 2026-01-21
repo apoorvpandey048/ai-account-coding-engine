@@ -191,12 +191,22 @@ class HealthResponse(BaseModel):
     status: str = Field(..., description="Service status")
     version: str = Field(..., description="API version")
     azure_openai_available: bool = Field(..., description="Whether Azure OpenAI is configured")
+    azure_openai_connected: bool = Field(False, description="Whether Azure OpenAI connection is active")
+    llm_classification_active: bool = Field(False, description="Whether LLM-based classification is enabled")
+    training_examples_count: int = Field(0, description="Number of training examples loaded")
+    pos_mappings_loaded: bool = Field(False, description="Whether POS mappings are available")
+    pos_count: int = Field(0, description="Number of POS positions with mappings")
     
     class Config:
         json_schema_extra = {
             "example": {
                 "status": "healthy",
                 "version": "1.0.0",
-                "azure_openai_available": True
+                "azure_openai_available": True,
+                "azure_openai_connected": True,
+                "llm_classification_active": True,
+                "training_examples_count": 89,
+                "pos_mappings_loaded": True,
+                "pos_count": 45
             }
         }

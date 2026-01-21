@@ -382,6 +382,39 @@
       arrow.textContent = content.classList.contains('active') ? '▲' : '▼';
     }
 
+    function updateFeatureStatus(health) {
+      const featureBox = document.getElementById('featureStatus');
+      const posMapping = document.getElementById('statusPosMapping');
+      const llmStatus = document.getElementById('statusLLM');
+      const trainingStatus = document.getElementById('statusTraining');
+      
+      // Show the feature status box
+      featureBox.style.display = 'block';
+      
+      // Update POS Mapping status
+      const posIcon = health.pos_mappings_loaded ? '✅' : '❌';
+      const posText = health.pos_mappings_loaded 
+        ? `Loaded (${health.pos_count} positions)` 
+        : 'Not available';
+      posMapping.innerHTML = `Pos-based Mapping: <span style="font-weight:600;">${posIcon} ${posText}</span>`;
+      
+      // Update LLM Classification status
+      const llmIcon = health.llm_classification_active ? '✅' : '⚠️';
+      const llmText = health.llm_classification_active 
+        ? 'Active (Azure OpenAI connected)' 
+        : health.azure_openai_available 
+          ? 'Configured but not connected' 
+          : 'Not configured (rule-based only)';
+      llmStatus.innerHTML = `LLM Classification: <span style="font-weight:600;">${llmIcon} ${llmText}</span>`;
+      
+      // Update Training Examples status
+      const trainingIcon = health.training_examples_count > 0 ? '✅' : '❌';
+      const trainingText = health.training_examples_count > 0 
+        ? `${health.training_examples_count} examples loaded` 
+        : 'No examples loaded';
+      trainingStatus.innerHTML = `Training Examples: <span style="font-weight:600;">${trainingIcon} ${trainingText}</span>`;
+    }
+
     async function request(path, options = {}) {
       const host = document.getElementById('host').value.trim();
       const apiKey = document.getElementById('apiKey').value.trim();
@@ -421,6 +454,11 @@
         try {
           const json = JSON.parse(txt);
           output.textContent = JSON.stringify(json, null, 2);
+          
+          // Update feature status if this is a health check
+          if (path === '/health' && res.ok && json.status === 'healthy') {
+            updateFeatureStatus(json);
+          }
         } catch (err) {
           output.textContent = txt;
         }
