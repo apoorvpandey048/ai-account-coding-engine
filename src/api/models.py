@@ -196,6 +196,7 @@ class HealthResponse(BaseModel):
     training_examples_count: int = Field(0, description="Number of training examples loaded")
     pos_mappings_loaded: bool = Field(False, description="Whether POS mappings are available")
     pos_count: int = Field(0, description="Number of POS positions with mappings")
+    openai_error: Optional[str] = Field(None, description="OpenAI connection error message if any")
     
     class Config:
         json_schema_extra = {
@@ -207,6 +208,7 @@ class HealthResponse(BaseModel):
                 "llm_classification_active": True,
                 "training_examples_count": 89,
                 "pos_mappings_loaded": True,
-                "pos_count": 45
+                "pos_count": 45,
+                "openai_error": None
             }
         }

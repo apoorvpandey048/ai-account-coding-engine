@@ -63,13 +63,15 @@ class SemanticClassifier:
         ]
     }
     
-    def __init__(self, azure_client: Optional[AzureOpenAI] = None):
+    def __init__(self, azure_client: Optional[AzureOpenAI] = None, deployment_name: Optional[str] = None):
         """Initialize classifier with optional Azure OpenAI client.
         
         Args:
             azure_client: Azure OpenAI client for LLM-based classification
+            deployment_name: Azure OpenAI deployment name for model parameter
         """
         self.azure_client = azure_client
+        self.deployment_name = deployment_name or os.environ.get('AZURE_OPENAI_DEPLOYMENT_NAME', 'gpt-4')
         self.training_examples = self._load_training_examples()
     
     def _load_training_examples(self) -> List[Dict[str, str]]:
@@ -370,9 +372,9 @@ Respond with JSON only:
 }}"""
         
         try:
-            model_name = os.environ.get('AZURE_OPENAI_DEPLOYMENT_NAME', 'gpt-4')
+            # For Azure OpenAI, model parameter MUST be set to the deployment name
             response = self.azure_client.chat.completions.create(
-                model=model_name,
+                model=self.deployment_name,
                 messages=[
                     {"role": "system", "content": "You are a precise accounting classifier for German construction/manufacturing invoices. Always respond with valid JSON only. Use the category definitions and examples provided."},
                     {"role": "user", "content": prompt}

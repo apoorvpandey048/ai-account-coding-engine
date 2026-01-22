@@ -16,15 +16,20 @@ class AccountCodingEngine:
     def __init__(
         self,
         azure_openai_client: Optional[AzureOpenAI] = None,
-        chart_of_accounts: Optional[Dict[str, List[str]]] = None
+        chart_of_accounts: Optional[Dict[str, List[str]]] = None,
+        deployment_name: Optional[str] = None
     ):
         """Initialize the account coding engine.
         
         Args:
             azure_openai_client: Azure OpenAI client for LLM-based classification
             chart_of_accounts: Custom chart of accounts mapping
+            deployment_name: Azure OpenAI deployment name for model parameter
         """
-        self.classifier = SemanticClassifier(azure_client=azure_openai_client)
+        self.classifier = SemanticClassifier(
+            azure_client=azure_openai_client,
+            deployment_name=deployment_name
+        )
         self.mapper = AccountMapper(chart_of_accounts=chart_of_accounts)
         logger.info("AccountCodingEngine initialized successfully")
     

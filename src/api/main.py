@@ -1,7 +1,6 @@
 """Main FastAPI application for AI Account Coding Service."""
 
-from fastapi import FastAPI, HTTPException, Depends, Security, status, Request
-from fastapi.security import APIKeyHeader
+from fastapi import FastAPI, HTTPException, Depends, status, Request
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import logging
@@ -57,11 +56,14 @@ async def lifespan(app: FastAPI):
                 api_version=settings.AZURE_OPENAI_API_VERSION,
                 azure_endpoint=settings.AZURE_OPENAI_ENDPOINT
             )
-            logger.info("Azure OpenAI client initialized")
+            logger.info(f"Azure OpenAI client initialized for endpoint: {settings.AZURE_OPENAI_ENDPOINT}")
         else:
             logger.warning("Azure OpenAI not configured - using rule-based classification only")
         
-        engine = AccountCodingEngine(azure_openai_client=azure_client)
+        engine = AccountCodingEngine(
+            azure_openai_client=azure_client,
+            deployment_name=settings.AZURE_OPENAI_DEPLOYMENT_NAME
+        )
         logger.info("Account Coding Engine initialized successfully")
         
     except Exception as e:
@@ -94,41 +96,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# API Key authentication
-api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
-
-
-async def verify_api_key(request: Request, api_key: str = Security(api_key_header)):
-    """Verify API key from request header.
-
-    Allow CORS preflight (OPTIONS) requests to pass without an API key so
-    the browser can perform the preflight handshake. This avoids the
-    common `TypeError: Failed to fetch` client-side error caused when
-    the OPTIONS request is rejected by authentication.
-    """
-    # Allow CORS preflight without API key
-    if request.method == "OPTIONS":
-        return None
-
-    settings = get_settings()
-
-    if not settings.API_KEY_REQUIRED:
-        return None
-
-    if not api_key:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="API Key required"
-        )
-
-    # Check against configured API keys
-    if api_key not in settings.VALID_API_KEYS:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Invalid API Key"
-        )
-
-    return api_key
+# API key enforcement removed — rely on configuration and App Service controls
 
 
 def get_engine() -> AccountCodingEngine:
@@ -142,7 +110,7 @@ def get_engine() -> AccountCodingEngine:
 
 
 # Include routes
-app.include_router(router, dependencies=[Depends(verify_api_key)])
+app.include_router(router)
 
 
 @app.get("/", response_model=dict)
@@ -170,14 +138,31 @@ async def health_check():
     # Test actual connection to Azure OpenAI if configured
     azure_openai_connected = False
     llm_classification_active = False
+    openai_error = None
     if azure_openai_configured and engine:
         try:
-            # Quick test: check if classifier has Azure client
+            # Quick test: check if classifier has Azure client and try minimal API call
             if hasattr(engine, 'classifier') and engine.classifier.azure_client:
-                azure_openai_connected = True
-                llm_classification_active = True
+                # Attempt a minimal test request to verify deployment exists
+                # For Azure OpenAI, model parameter MUST be the deployment name
+                try:
+                    test_response = engine.classifier.azure_client.chat.completions.create(
+                        model=settings.AZURE_OPENAI_DEPLOYMENT_NAME,
+                        messages=[{"role": "user", "content": "test"}],
+                        max_tokens=1,
+                        temperature=0.0
+                    )
+                    azure_openai_connected = True
+                    llm_classification_active = True
+                except Exception as api_err:
+                    logger.warning(f"Azure OpenAI API test failed: {api_err}")
+                    openai_error = str(api_err)
+                    # Client exists but deployment/connection failed
+                    azure_openai_connected = False
+                    llm_classification_active = False
         except Exception as e:
             logger.warning(f"Azure OpenAI connection check failed: {e}")
+            openai_error = str(e)
     
     # Check training examples loaded
     training_examples_count = 0
@@ -207,7 +192,8 @@ async def health_check():
         llm_classification_active=llm_classification_active,
         training_examples_count=training_examples_count,
         pos_mappings_loaded=pos_mappings_loaded,
-        pos_count=pos_count
+        pos_count=pos_count,
+        openai_error=openai_error
     )
 
 
@@ -240,14 +226,7 @@ async def debug_fetch_dataset():
 
 
 # Error handlers
-@app.exception_handler(HTTPException)
-async def http_exception_handler(request, exc):
-    """Handle HTTP exceptions."""
-    return ErrorResponse(
-        error=exc.__class__.__name__,
-        message=exc.detail,
-        details={"status_code": exc.status_code}
-    )
+# Let FastAPI handle HTTPException natively
 
 
 @app.exception_handler(Exception)
