@@ -299,7 +299,7 @@
     "art_nr": "100028956",
     "product_group": "Rohre"
   },
-  "top_k": 5
+  "top_k": 3
 }</textarea>
             </div>
           </div>
@@ -315,14 +315,37 @@
               <textarea id="batchPayload">{
   "line_items": [
     {
-      "invoice_text": "Rapido Drahtbinder geschweisst 10cm 1000St.",
+      "invoice_text": "Streng duct PP-HM Sickerrohr SN4 Ø150mm L5m",
+      "supplier": "Streng AG",
+      "quantity": 20,
+      "unit_of_measure": "M",
+      "unit_price": 11.20,
+      "line_amount": 224.00,
+      "pos": "10",
+      "art_nr": "100028956",
+      "product_group": "Rohre"
+    },
+    {
+      "invoice_text": "Streng duct PP-HM Abzweiger 45° SN8 (SN12) Ø160/110mm",
+      "supplier": "Streng AG",
+      "quantity": 4,
+      "unit_of_measure": "ST",
+      "unit_price": 21.00,
+      "line_amount": 84.00,
+      "pos": "40",
+      "art_nr": "100028552",
+      "product_group": "Fittings"
+    },
+    {
+      "invoice_text": "Rapido Drahtbinder geschweisst 10cm 1000St. (20 Bd/Sack)",
       "supplier": "Rapido",
       "quantity": 80,
       "unit_of_measure": "BD",
       "unit_price": 14.70,
       "line_amount": 1176.00,
       "pos": "10",
-      "art_nr": "100036892"
+      "art_nr": "100036892",
+      "product_group": "Consumables"
     },
     {
       "invoice_text": "Transportkosten",
@@ -332,10 +355,11 @@
       "unit_price": 266.11,
       "line_amount": 266.11,
       "pos": "20",
-      "art_nr": "200000036"
+      "art_nr": "200000036",
+      "product_group": "Services"
     }
   ],
-  "top_k": 5
+  "top_k": 3
 }</textarea>
             </div>
           </div>
@@ -400,11 +424,20 @@
       
       // Update LLM Classification status
       const llmIcon = health.llm_classification_active ? '✅' : '⚠️';
-      const llmText = health.llm_classification_active 
+      let llmText = health.llm_classification_active 
         ? 'Active (Azure OpenAI connected)' 
         : health.azure_openai_available 
           ? 'Configured but not connected' 
           : 'Not configured (rule-based only)';
+      
+      // Show error details if present
+      if (health.openai_error && !health.llm_classification_active) {
+        const errorShort = health.openai_error.includes('DeploymentNotFound') 
+          ? 'Deployment not found' 
+          : health.openai_error.substring(0, 50);
+        llmText += ` - ${errorShort}`;
+      }
+      
       llmStatus.innerHTML = `LLM Classification: <span style="font-weight:600;">${llmIcon} ${llmText}</span>`;
       
       // Update Training Examples status
